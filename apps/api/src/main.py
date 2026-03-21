@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from src.auth.router import router as auth_router
 from src.experiences.router import router as experiences_router
+from src.graph.router import router as graph_router
 from src.lib.database import engine
 from src.lib.exceptions import (
     AppException,
@@ -37,6 +38,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 
 app.include_router(auth_router)
 app.include_router(experiences_router)
+app.include_router(graph_router)
 app.include_router(organizations_router)
 app.include_router(upload_router)
 
