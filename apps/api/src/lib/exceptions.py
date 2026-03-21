@@ -40,6 +40,11 @@ class NotFoundException(AppException):
         super().__init__(status_code=404, code="NOT_FOUND", message=message, **kwargs)
 
 
+class ConflictException(AppException):
+    def __init__(self, message: str = "Resource already exists", **kwargs: Any) -> None:
+        super().__init__(status_code=409, code="CONFLICT", message=message, **kwargs)
+
+
 class UnauthorizedException(AppException):
     def __init__(self, message: str = "Unauthorized", **kwargs: Any) -> None:
         super().__init__(status_code=401, code="UNAUTHORIZED", message=message, **kwargs)

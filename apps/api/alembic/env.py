@@ -8,6 +8,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.lib.database import Base
 
+import src.contacts.models  # noqa: F401
+import src.tags.models  # noqa: F401
+
 config = context.config
 
 if config.config_file_name is not None:
