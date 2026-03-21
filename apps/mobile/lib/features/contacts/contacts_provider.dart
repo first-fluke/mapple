@@ -1,7 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mobile/models/contact.dart';
+import 'package:mobile/connectivity/connectivity_provider.dart';
+import 'package:mobile/database/database.dart';
+import 'package:mobile/features/contacts/contacts_repository.dart';
 
+final contactsStreamProvider = StreamProvider<List<CachedContact>>((ref) {
+  final repo = ref.watch(contactsRepositoryProvider);
+  final isOnline = ref.watch(isOnlineProvider);
+
+  if (isOnline) {
+    repo.syncContacts().ignore();
+  }
+
+  return repo.watchContacts();
+});
+
+final lastSyncTimeProvider = FutureProvider<DateTime?>((ref) {
+  final repo = ref.watch(contactsRepositoryProvider);
+  return repo.getLastSyncTime();
+import 'package:mobile/models/contact.dart';
 final contactsProvider = Provider<List<Contact>>((ref) {
   return const [
     Contact(id: 1, name: 'Alice Johnson', email: 'alice@example.com', phone: '+1-555-0101'),
