@@ -1,20 +1,21 @@
 from pydantic import BaseModel
 
 
+class GlobePinOut(BaseModel):
+    id: str
+    name: str
+    avatar_url: str
+    lat: float
+    lng: float
+
+    model_config = {"from_attributes": True}
+
 class BboxQuery(BaseModel):
     sw_lat: float
     sw_lng: float
     ne_lat: float
     ne_lng: float
-
-
-class GlobePinOut(BaseModel):
-    id: str
-    name: str
     avatar_url: str | None
-    lat: float
-    lng: float
-
 
 class GlobeArcOut(BaseModel):
     id: str
@@ -25,6 +26,7 @@ class GlobeArcOut(BaseModel):
     type: str
     frequency: int
 
+    model_config = {"from_attributes": True}
 
 class GlobeClusterOut(BaseModel):
     lat: float
