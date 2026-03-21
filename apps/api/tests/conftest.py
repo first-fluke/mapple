@@ -213,3 +213,18 @@ async def create_test_experience(
     await session.commit()
     await session.refresh(exp)
     return exp
+from collections.abc import AsyncGenerator
+from unittest.mock import MagicMock
+import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.lib.auth import get_current_user_id
+from src.lib.database import get_session
+async def _override_get_current_user_id() -> int:
+    return 1
+async def _override_get_session() -> AsyncGenerator[AsyncSession]:
+    yield MagicMock(spec=AsyncSession)
+async def client() -> AsyncGenerator[httpx.AsyncClient]:
+    app.dependency_overrides[get_current_user_id] = _override_get_current_user_id
+    app.dependency_overrides[get_session] = _override_get_session
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:

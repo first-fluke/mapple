@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TokenRequest(BaseModel):
@@ -30,3 +30,7 @@ class UserOut(BaseModel):
     avatar_url: str | None
 
     model_config = {"from_attributes": True}
+
+
+class ProfileUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
