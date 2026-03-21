@@ -7,8 +7,16 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from src.auth.models import UserAuth  # noqa: F401 — register models for autogenerate
+from src.contacts.models import Contact  # noqa: F401 — register models for autogenerate
+from src.experiences.models import Experience  # noqa: F401 — register models for autogenerate
 from src.lib.database import Base  # noqa: E402
+from src.meetings.models import Meeting, MeetingAttendee  # noqa: F401 — register models for autogenerate
 from src.organizations.models import Organization  # noqa: F401 — register models for autogenerate
+
+# Import all models so Alembic can detect them
+import src.contacts.models  # noqa: F401
+import src.tags.models  # noqa: F401
+import src.users.models  # noqa: F401
 
 config = context.config
 
