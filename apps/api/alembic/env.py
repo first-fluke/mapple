@@ -6,6 +6,7 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from src.auth.models import UserAuth  # noqa: F401 — register models for autogenerate
 from src.lib.database import Base
 
 config = context.config
