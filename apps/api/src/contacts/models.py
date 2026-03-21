@@ -1,5 +1,7 @@
 import datetime
 
+from geoalchemy2 import Geometry
+from sqlalchemy import Column, ForeignKey, String, func
 from sqlalchemy import Float, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,6 +16,7 @@ class Contact(Base):
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str | None] = mapped_column(String(255))
     phone: Mapped[str | None] = mapped_column(String(50))
+    location = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
     latitude: Mapped[float | None] = mapped_column()
     longitude: Mapped[float | None] = mapped_column()
     country: Mapped[str | None] = mapped_column(String(100))
