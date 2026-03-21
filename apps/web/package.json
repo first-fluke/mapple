@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
+    "test:e2e": "playwright test"
     "check-bundle": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@axe-core/react": "^4.11.1",
     "@biomejs/biome": "2.2.0",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
