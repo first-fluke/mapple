@@ -2,12 +2,13 @@ import asyncio
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
 from src.auth.models import UserAuth  # noqa: F401 — register models for autogenerate
-from src.lib.database import Base
+from src.lib.database import Base  # noqa: E402
+from src.organizations.models import Organization  # noqa: F401 — register models for autogenerate
 
 config = context.config
 
