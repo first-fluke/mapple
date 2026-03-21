@@ -45,6 +45,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 app.include_router(auth_router)
 app.include_router(contacts_router)
 app.include_router(experiences_router)
+app.include_router(meetings_router)
 app.include_router(geocoding_router)
 app.include_router(export_router)
 app.include_router(globe_router)
