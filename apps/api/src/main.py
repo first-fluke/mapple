@@ -7,12 +7,15 @@ from fastapi.responses import JSONResponse
 from src.auth.router import router as auth_router
 from src.contacts.router import router as contacts_router
 from src.experiences.router import router as experiences_router
+from src.globe.router import router as globe_router
+from src.contacts.router import router as contacts_router
 from src.lib.database import engine
 from src.lib.exceptions import (
     AppException,
     make_error_response,
 )
 from src.lib.redis import redis
+from src.meetings.router import router as meetings_router
 from src.organizations.router import router as organizations_router
 from src.upload.router import router as upload_router
 
@@ -39,8 +42,11 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 app.include_router(auth_router)
 app.include_router(contacts_router)
 app.include_router(experiences_router)
+app.include_router(globe_router)
 app.include_router(organizations_router)
 app.include_router(upload_router)
+app.include_router(meetings_router)
+app.include_router(contacts_router)
 
 
 @app.get("/health")
