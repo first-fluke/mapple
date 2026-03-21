@@ -76,4 +76,30 @@ export const contactsApi = {
   removeTag(contactId: number, tagId: number) {
     return api.delete<void>(`/contacts/${contactId}/tags/${tagId}`);
   },
+export interface ContactTag {
+export interface ContactExperience {
+  user_id: number;
+  latitude: number | null;
+  longitude: number | null;
+  country: string | null;
+  city: string | null;
+  tags: ContactTag[];
+  experiences: ContactExperience[];
+export interface ContactCreateInput {
+  email?: string | null;
+  phone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  country?: string | null;
+  city?: string | null;
+  tag_ids?: number[];
+  experiences?: {
+    organization_id: number;
+    role?: string | null;
+    major?: string | null;
+  }[];
+  list: () => api.get<Contact[]>('/contacts'),
+  get: (id: number) => api.get<Contact>(`/contacts/${id}`),
+  create: (data: ContactCreateInput) => api.post<Contact>('/contacts', data),
+  delete: (id: number) => api.delete<void>(`/contacts/${id}`),
 };
