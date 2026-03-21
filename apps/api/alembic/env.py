@@ -12,6 +12,11 @@ from src.lib.database import Base  # noqa: E402
 from src.meetings.models import Meeting, MeetingAttendee  # noqa: F401 — register models for autogenerate
 from src.organizations.models import Organization  # noqa: F401 — register models for autogenerate
 
+# Import all models so Alembic can detect them
+import src.contacts.models  # noqa: F401
+import src.tags.models  # noqa: F401
+import src.users.models  # noqa: F401
+
 config = context.config
 
 if config.config_file_name is not None:
