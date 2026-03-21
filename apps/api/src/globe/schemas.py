@@ -51,3 +51,25 @@ class GlobeDataOut(BaseModel):
     contacts: list[GlobeContactOut]
     relationships: list[GlobeRelationshipOut]
     clusters: list[GlobeClusterOut]
+from pydantic import BaseModel
+class GlobePinOut(BaseModel):
+    id: str
+    avatar_url: str
+    lat: float
+    lng: float
+    model_config = {"from_attributes": True}
+    sw_lat: float
+    sw_lng: float
+    ne_lat: float
+    ne_lng: float
+    avatar_url: str | None
+class GlobeArcOut(BaseModel):
+    start_lat: float
+    start_lng: float
+    end_lat: float
+    end_lng: float
+    type: str
+    frequency: int
+    contact_ids: list[str]
+    pins: list[GlobePinOut]
+    arcs: list[GlobeArcOut]

@@ -1,5 +1,7 @@
 from geoalchemy2.functions import ST_X, ST_Y, ST_MakeEnvelope, ST_SnapToGrid, ST_Within
 from sqlalchemy import func, select
+import sqlalchemy as sa
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import Contact
@@ -115,3 +117,41 @@ class GlobeRepository:
         if ts is None:
             return None
         return str(int(ts.timestamp()))
+    async def find_contacts_with_location(
+        self, user_id: int, *, limit: int = 200
+        sw_lat: float,
+        sw_lng: float,
+        ne_lat: float,
+        ne_lng: float,
+    ) -> list[Contact]:
+            select(Contact)
+                Contact.latitude.is_not(None),
+                Contact.longitude.is_not(None),
+            .order_by(Contact.created_at.desc())
+            .limit(limit)
+        return list(result.scalars().all())
+                Contact.lat.is_not(None),
+                Contact.lng.is_not(None),
+                Contact.lat >= sw_lat,
+                Contact.lat <= ne_lat,
+                Contact.lng >= sw_lng,
+                Contact.lng <= ne_lng,
+    async def find_shared_org_pairs(
+        self, contact_ids: list[int]
+    ) -> list[tuple[int, int, int]]:
+        """Find pairs of contacts that share an organization.
+        Returns list of (contact_a_id, contact_b_id, shared_org_count).
+        """
+        if len(contact_ids) < 2:
+            return []
+        e1 = sa.alias(Experience.__table__, name="e1")
+        e2 = sa.alias(Experience.__table__, name="e2")
+                e1.c.contact_id.label("contact_a"),
+                e2.c.contact_id.label("contact_b"),
+                sa.func.count().label("shared_count"),
+            .select_from(e1.join(e2, e1.c.organization_id == e2.c.organization_id))
+                e1.c.contact_id.in_(contact_ids),
+                e2.c.contact_id.in_(contact_ids),
+                e1.c.contact_id < e2.c.contact_id,
+            .group_by(e1.c.contact_id, e2.c.contact_id)
+        return [(row.contact_a, row.contact_b, row.shared_count) for row in result]
