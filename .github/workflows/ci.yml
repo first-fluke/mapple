@@ -54,6 +54,12 @@ jobs:
       - name: Test
         run: npx vitest run
         working-directory: apps/web
+      - name: Build
+        run: npm run build
+        working-directory: apps/web
+      - name: Check bundle size
+        run: npm run check-bundle
+        working-directory: apps/web
 
   api:
     name: API
