@@ -14,6 +14,7 @@ from src.lib.exceptions import (
 from src.lib.redis import redis
 from src.meetings.router import router as meetings_router
 from src.organizations.router import router as organizations_router
+from src.upload.router import router as upload_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 
 app.include_router(auth_router)
 app.include_router(organizations_router)
+app.include_router(upload_router)
 app.include_router(meetings_router)
 app.include_router(contacts_router)
 
