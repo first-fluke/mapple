@@ -1,8 +1,55 @@
-import { GlobeView } from '@/components/globe-view';
+'use client';
 
+import { useState } from 'react';
+import { type Contact, GlobeView } from '@/components/globe';
+
+const DEMO_CONTACTS: Contact[] = [
+  {
+    id: '1',
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    location: 'New York, US',
+    relationships: [
+      { contactName: 'Bob Smith', type: 'business' },
+      { contactName: 'Carol Lee', type: 'friend' },
+    ],
+  },
+  {
+    id: '2',
+    name: 'Bob Smith',
+    email: 'bob@example.com',
+    location: 'London, UK',
+    relationships: [{ contactName: 'Alice Johnson', type: 'business' }],
+  },
+  {
+    id: '3',
+    name: 'Carol Lee',
+    email: 'carol@example.com',
+    location: 'Tokyo, JP',
+    relationships: [
+      { contactName: 'Alice Johnson', type: 'friend' },
+      { contactName: 'David Kim', type: 'family' },
+    ],
+  },
+  {
+    id: '4',
+    name: 'David Kim',
+    email: 'david@example.com',
+    location: 'Seoul, KR',
+    relationships: [{ contactName: 'Carol Lee', type: 'family' }],
+  },
+];
+
+export default function HomePage() {
+  const [selectedId, setSelectedId] = useState<string>();
+
+  return (
+    <div className="flex h-full flex-col">
+      <h1 className="sr-only">Globe CRM — Contact Map</h1>
+      <GlobeView contacts={DEMO_CONTACTS} onSelectContact={setSelectedId} selectedContactId={selectedId} />
+import { GlobeView } from '@/components/globe-view';
 export default function GlobePage() {
   return <GlobeView />;
-'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ProfileCard } from '@/components/profile-card';
 import { type BboxParams, useGlobeData } from '@/hooks/use-globe-data';
@@ -76,14 +123,12 @@ const DEFAULT_BBOX: BboxParams = {
     setDrawerOpen(open);
     if (!open) setSelectedPin(null);
   }, []);
-  return (
     <div className="-m-4 -mb-20 relative h-[calc(100vh-theme(spacing.20))] md:-mb-4 md:h-[calc(100vh)]">
       <iframe ref={iframeRef} src="/globe/index.html" className="h-full w-full border-0" title="Globe" />
       <ProfileCard pin={selectedPin} open={drawerOpen} onOpenChange={handleDrawerChange} />
 import { useAtom } from 'jotai';
 import { OnboardingOverlay } from '@/components/onboarding-overlay';
 import { onboardingCompletedAtom } from '@/lib/atoms/onboarding';
-export default function HomePage() {
   const [completed] = useAtom(onboardingCompletedAtom);
   if (!completed) {
     return <OnboardingOverlay />;
@@ -95,7 +140,6 @@ const SAMPLE_PINS = [
   { id: '1', lat: 37.5665, lng: 126.978, name: 'Seoul' },
   { id: '2', lat: 35.6762, lng: 139.6503, name: 'Tokyo' },
   { id: '3', lat: 40.7128, lng: -74.006, name: 'New York' },
-];
 export default function Home() {
   const size = useWindowSize();
     <main className="relative h-screen w-screen overflow-hidden bg-background">
