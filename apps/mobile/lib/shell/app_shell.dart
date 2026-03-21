@@ -70,19 +70,31 @@ class _AppShellState extends ConsumerState<AppShell> {
         children: [
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.globe),
-            label: const Text('Globe'),
+            label: Semantics(
+              label: 'Globe tab',
+              child: const Text('Globe'),
+            ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.chartLine),
-            label: const Text('Graph'),
+            label: Semantics(
+              label: 'Graph tab',
+              child: const Text('Graph'),
+            ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.users),
-            label: const Text('Contacts'),
+            label: Semantics(
+              label: 'Contacts tab',
+              child: const Text('Contacts'),
+            ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.settings),
-            label: const Text('Settings'),
+            label: Semantics(
+              label: 'Settings tab',
+              child: const Text('Settings'),
+            ),
           ),
         ],
       ),

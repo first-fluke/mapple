@@ -2,50 +2,78 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-import 'package:mobile/features/contacts/providers/contacts_provider.dart';
-import 'package:mobile/features/contacts/widgets/contact_tile.dart';
-import 'package:mobile/features/contacts/widgets/empty_contacts.dart';
+import 'package:mobile/features/contacts/contacts_provider.dart';
 
-class ContactsScreen extends ConsumerStatefulWidget {
+class ContactsScreen extends ConsumerWidget {
   const ContactsScreen({super.key});
 
   @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = context.theme;
+    final contacts = ref.watch(contactsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Semantics(
+            header: true,
+            child: Text(
+              'Contacts',
+              style: theme.typography.xl2.copyWith(
+                color: theme.colorScheme.foreground,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: contacts.length,
+            itemBuilder: (context, index) {
+              final contact = contacts[index];
+              return Semantics(
+                label: contact.name,
+                hint: [
+                  if (contact.email != null) contact.email!,
+                  if (contact.phone != null) contact.phone!,
+                ].join(', '),
+                child: FTile(
+                  prefixIcon: FIcon(FAssets.icons.user),
+                  title: Text(contact.name),
+                  subtitle: Text(contact.email ?? contact.phone ?? ''),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+import 'package:mobile/features/contacts/providers/contacts_provider.dart';
+import 'package:mobile/features/contacts/widgets/contact_tile.dart';
+import 'package:mobile/features/contacts/widgets/empty_contacts.dart';
+class ContactsScreen extends ConsumerStatefulWidget {
   ConsumerState<ContactsScreen> createState() => _ContactsScreenState();
 }
-
 class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-
-  @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
   }
-
-  @override
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref.read(contactsProvider.notifier).loadMore();
     }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
     final state = ref.watch(contactsProvider);
-
-    return Column(
-      children: [
         // Header
-        Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,8 +83,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 style: theme.typography.xl2.copyWith(
                   color: theme.colorScheme.foreground,
                   fontWeight: FontWeight.bold,
-                ),
-              ),
               const SizedBox(height: 12),
               // Search bar
               SizedBox(
@@ -77,8 +103,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                     prefixIcon: Icon(
                       Icons.search,
                       size: 20,
-                      color: theme.colorScheme.mutedForeground,
-                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? GestureDetector(
                             onTap: () {
@@ -96,20 +120,11 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: theme.colorScheme.border),
-                    ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.border),
-                    ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: theme.colorScheme.primary),
-                    ),
                     filled: true,
                     fillColor: theme.colorScheme.background,
-                  ),
-                ),
-              ),
               const SizedBox(height: 8),
               // Sort row
               Row(
@@ -117,9 +132,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                   Text(
                     '정렬:',
                     style: theme.typography.xs.copyWith(
-                      color: theme.colorScheme.mutedForeground,
-                    ),
-                  ),
                   const SizedBox(width: 8),
                   ...ContactSort.values.map((sort) {
                     final isSelected = state.sort == sort;
@@ -139,7 +151,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.muted,
                             borderRadius: BorderRadius.circular(12),
-                          ),
                           child: Text(
                             sort.label,
                             style: theme.typography.xs.copyWith(
@@ -149,30 +160,18 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.normal,
-                            ),
-                          ),
                         ),
                       ),
                     );
                   }),
                 ],
-              ),
             ],
-          ),
-        ),
         // Content
-        Expanded(
           child: _buildContent(state),
-        ),
-      ],
     );
-  }
-
   Widget _buildContent(ContactsState state) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
-    }
-
     if (state.error != null && state.contacts.isEmpty) {
       return Center(
         child: Column(
@@ -182,8 +181,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
               '오류가 발생했습니다',
               style: context.theme.typography.base.copyWith(
                 color: context.theme.colorScheme.destructive,
-              ),
-            ),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: () => ref.read(contactsProvider.notifier).refresh(),
@@ -192,20 +189,11 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 style: context.theme.typography.sm.copyWith(
                   color: context.theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
           ],
-        ),
       );
-    }
-
     if (state.contacts.isEmpty) {
       return EmptyContacts(
         isSearchResult: state.searchQuery.isNotEmpty,
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: () => ref.read(contactsProvider.notifier).refresh(),
       child: ListView.builder(
@@ -219,7 +207,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
               child: Center(child: CircularProgressIndicator()),
             );
           }
-
           return RepaintBoundary(
             child: ContactTile(contact: state.contacts[index]),
           );
