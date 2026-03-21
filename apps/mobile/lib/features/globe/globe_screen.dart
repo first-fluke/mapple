@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
+import 'package:mobile/features/globe/globe_controller.dart';
 import 'package:mobile/features/contacts/contacts_provider.dart';
 import 'package:mobile/models/contact.dart';
 import 'package:mobile/services/js_bridge_service.dart';
@@ -12,26 +15,104 @@ class GlobeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final globeState = ref.watch(globeControllerProvider);
+    final controller = ref.read(globeControllerProvider.notifier);
+    final theme = context.theme;
+
+    return PopScope(
+      canPop: false,
+      child: Stack(
+        children: [
+          InAppWebView(
+            initialFile: 'assets/globe/index.html',
+            initialSettings: InAppWebViewSettings(
+              transparentBackground: true,
+              javaScriptEnabled: true,
+              mediaPlaybackRequiresUserGesture: false,
+              allowsInlineMediaPlayback: true,
+              supportZoom: false,
+              useHybridComposition: true,
+              hardwareAcceleration: true,
+            ),
+            gestureRecognizers: {
+              Factory<OneSequenceGestureRecognizer>(
+                EagerGestureRecognizer.new,
+              ),
+            },
+            onWebViewCreated: (webViewController) {
+              controller.setWebViewController(webViewController);
+            },
+            onLoadStop: (webViewController, url) async {
+              final brightness = Theme.of(context).brightness;
+              await controller.setTheme(
+                brightness == Brightness.dark ? 'dark' : 'light',
+              );
+            },
+            onReceivedError: (webViewController, request, error) {
+              controller.onLoadError(error.description);
+            },
+          ),
+          if (globeState.status == GlobeStatus.loading)
+            Positioned.fill(
+              child: ColoredBox(
+                color: theme.colorScheme.background,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator.adaptive(),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Loading Globe...',
+                        style: theme.typography.base.copyWith(
+                          color: theme.colorScheme.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (globeState.status == GlobeStatus.error)
+            Positioned.fill(
+              child: ColoredBox(
+                color: theme.colorScheme.background,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FIcon(
+                        FAssets.icons.triangleAlert,
+                        color: theme.colorScheme.destructive,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        globeState.errorMessage ?? 'Failed to load globe',
+                        style: theme.typography.base.copyWith(
+                          color: theme.colorScheme.mutedForeground,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     final isAccessible = MediaQuery.of(context).accessibleNavigation;
     final contacts = ref.watch(contactsProvider);
-
     if (isAccessible) {
       return _GlobeFallbackList(contacts: contacts);
     }
-
     return _GlobeWebView(ref: ref);
   }
 }
-
 class _GlobeFallbackList extends StatelessWidget {
   final List<Contact> contacts;
-
   const _GlobeFallbackList({required this.contacts});
-
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,9 +125,6 @@ class _GlobeFallbackList extends StatelessWidget {
               style: theme.typography.xl2.copyWith(
                 color: theme.colorScheme.foreground,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ),
         Expanded(
           child: ListView.builder(
@@ -60,11 +138,6 @@ class _GlobeFallbackList extends StatelessWidget {
                   prefixIcon: FIcon(FAssets.icons.user),
                   title: Text(contact.name),
                   subtitle: Text(contact.email ?? contact.phone ?? ''),
-                ),
-              );
-            },
-          ),
-        ),
       ],
     );
   }

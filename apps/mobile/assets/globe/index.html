@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Globe CRM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Globe</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; }
+    body { background: #09090b; touch-action: none; }
+    body.light { background: #ffffff; }
+    #globe-container { width: 100%; height: 100%; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Globe CRM</title>
 
     body {
       --bg: #f0f0f5;
@@ -19,7 +25,6 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-
     body.dark {
       --bg: #0a0a1a;
       --text: #e0e0e0;
@@ -27,10 +32,6 @@
       --pin-border: #2a2a4e;
       --pin-shadow: rgba(0, 0, 0, 0.4);
       --atmosphere: rgba(100, 149, 237, 0.15);
-    }
-
-    #globe-container { width: 100%; height: 100%; }
-
     /* Pin: profile picture + name, 48dp touch target */
     .globe-pin {
       display: flex;
@@ -47,16 +48,13 @@
       user-select: none;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       pointer-events: auto;
-    }
     .globe-pin:hover,
     .globe-pin:focus-visible {
       transform: scale(1.1);
       box-shadow: 0 4px 12px var(--pin-shadow);
-    }
     .globe-pin.highlighted {
       border-color: #4169e1;
       box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.35), 0 4px 12px var(--pin-shadow);
-    }
     .globe-pin__avatar {
       width: 32px;
       height: 32px;
@@ -64,7 +62,6 @@
       object-fit: cover;
       flex-shrink: 0;
       background: var(--pin-border);
-    }
     .globe-pin__name {
       font-size: 12px;
       font-weight: 500;
@@ -73,76 +70,163 @@
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 80px;
-      color: var(--text);
-    }
-
     /* Cluster badge */
     .globe-cluster {
-      display: flex;
-      align-items: center;
       justify-content: center;
       width: 48px;
       height: 48px;
       background: #4169e1;
-      border-radius: 50%;
       color: #ffffff;
       font-weight: 700;
       font-size: 14px;
-      cursor: pointer;
-      user-select: none;
       box-shadow: 0 2px 8px rgba(65, 105, 225, 0.4);
       transition: transform 0.2s ease;
-      pointer-events: auto;
-    }
     .globe-cluster:hover,
     .globe-cluster:focus-visible {
       transform: scale(1.15);
-    }
   </style>
 </head>
 <body>
   <div id="globe-container"></div>
-
   <script src="https://unpkg.com/globe.gl@2"></script>
   <script>
-    'use strict';
+    let globe = null;
+    let currentTheme = 'dark';
 
+    const themes = {
+      dark: {
+        background: 'rgba(0,0,0,0)',
+        globeImage: '//unpkg.com/three-globe/example/img/earth-night.jpg',
+        atmosphereColor: '#3b82f6',
+        pointColor: '#3b82f6',
+        arcColor: ['#3b82f6', '#8b5cf6'],
+      },
+      light: {
+        background: 'rgba(0,0,0,0)',
+        globeImage: '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+        atmosphereColor: '#2563eb',
+        pointColor: '#2563eb',
+        arcColor: ['#2563eb', '#7c3aed'],
+      },
+    };
+
+    function initGlobe() {
+      const container = document.getElementById('globe-container');
+      const theme = themes[currentTheme];
+
+      globe = Globe()
+        .backgroundColor(theme.background)
+        .globeImageUrl(theme.globeImage)
+        .showAtmosphere(true)
+        .atmosphereColor(theme.atmosphereColor)
+        .atmosphereAltitude(0.25)
+        .pointsData([])
+        .pointAltitude('altitude')
+        .pointColor(() => theme.pointColor)
+        .pointRadius('radius')
+        .pointsMerge(true)
+        .arcsData([])
+        .arcColor('color')
+        .arcDashLength(0.4)
+        .arcDashGap(0.2)
+        .arcDashAnimateTime(1500)
+        .onPointClick(function(point) {
+          sendToFlutter('pointClick', point);
+        })
+        (container);
+
+      globe.controls().autoRotate = true;
+      globe.controls().autoRotateSpeed = 0.5;
+      globe.controls().enableZoom = true;
+
+      const resizeObserver = new ResizeObserver(function() {
+        globe.width(container.clientWidth);
+        globe.height(container.clientHeight);
+      });
+      resizeObserver.observe(container);
+
+      sendToFlutter('ready', { status: 'initialized' });
+    }
+
+    function sendToFlutter(type, payload) {
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler(
+          'onGlobeEvent',
+          JSON.stringify({ type: type, payload: payload })
+        );
+      }
+    }
+
+    function handleFlutterMessage(json) {
+      var message = JSON.parse(json);
+      switch (message.type) {
+        case 'setPoints':
+          if (globe) {
+            globe.pointsData(message.payload.points || []);
+          }
+          break;
+        case 'setArcs':
+          if (globe) {
+            globe.arcsData(message.payload.arcs || []);
+          }
+          break;
+        case 'focusPoint':
+          if (globe) {
+            var p = message.payload;
+            globe.pointOfView({ lat: p.lat, lng: p.lng, altitude: p.altitude || 2 }, 1000);
+          }
+          break;
+        case 'setTheme':
+          currentTheme = message.payload.theme || 'dark';
+          applyTheme();
+          break;
+        case 'setAutoRotate':
+          if (globe) {
+            globe.controls().autoRotate = message.payload.enabled;
+          }
+          break;
+      }
+    }
+
+    function applyTheme() {
+      var theme = themes[currentTheme];
+      document.body.className = currentTheme === 'light' ? 'light' : '';
+      if (globe) {
+        globe
+          .globeImageUrl(theme.globeImage)
+          .atmosphereColor(theme.atmosphereColor)
+          .pointColor(function() { return theme.pointColor; });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initGlobe);
+    'use strict';
     // ---------------------------------------------------------------------------
     // Constants
-    // ---------------------------------------------------------------------------
     var BRIDGE_VERSION = '1.0.0';
     var CLUSTER_RADIUS_DEG = 3;
     var EARTH_IMG_DAY = '//unpkg.com/three-globe/example/img/earth-day.jpg';
     var EARTH_IMG_NIGHT = '//unpkg.com/three-globe/example/img/earth-night.jpg';
-
     // Arc dash presets per type (WCAG 1.4.1 — not colour-only)
     var ARC_DASH = {
       call:    { length: 0, gap: 0 },             // solid
       email:   { length: 0.4, gap: 0.2 },         // short dash
       meeting: { length: 1, gap: 0.4 },           // long dash
       message: { length: 0.2, gap: 0.1 },         // dot
-    };
     var ARC_COLOR = {
       call:    ['rgba(65,105,225,0.8)', 'rgba(65,105,225,0.3)'],
       email:   ['rgba(46,204,113,0.8)', 'rgba(46,204,113,0.3)'],
       meeting: ['rgba(231,76,60,0.8)',  'rgba(231,76,60,0.3)'],
       message: ['rgba(155,89,182,0.8)', 'rgba(155,89,182,0.3)'],
-    };
     var MAX_ARC_STROKE = 5;
     var MIN_ARC_STROKE = 0.5;
-
-    // ---------------------------------------------------------------------------
     // State
-    // ---------------------------------------------------------------------------
     var pins = [];
     var arcs = [];
     var mode = 'explore';          // explore | select_location | view_connections
     var highlightedId = null;
     var maxFrequency = 1;
-
-    // ---------------------------------------------------------------------------
     // Globe initialisation
-    // ---------------------------------------------------------------------------
     var globe = Globe()(document.getElementById('globe-container'))
       .globeImageUrl(EARTH_IMG_DAY)
       .backgroundColor('rgba(0,0,0,0)')
@@ -170,23 +254,15 @@
         if (mode === 'select_location') {
           sendOutbound('LOCATION_SELECTED', { lat: coords.lat, lng: coords.lng });
         }
-      });
-
     // Auto-resize
     window.addEventListener('resize', function () {
       globe.width(window.innerWidth).height(window.innerHeight);
     });
-
-    // ---------------------------------------------------------------------------
     // Marker creation
-    // ---------------------------------------------------------------------------
     function createMarkerElement(d) {
       if (d.__cluster) {
         return createClusterElement(d);
-      }
       return createPinElement(d);
-    }
-
     function createPinElement(d) {
       var el = document.createElement('div');
       el.className = 'globe-pin' + (d.id === highlightedId ? ' highlighted' : '');
@@ -194,7 +270,6 @@
       el.setAttribute('tabindex', '0');
       el.setAttribute('aria-label', d.name);
       el.dataset.contactId = d.id;
-
       var img = document.createElement('img');
       img.className = 'globe-pin__avatar';
       img.src = d.avatarUrl || '';
@@ -204,61 +279,35 @@
       img.loading = 'lazy';
       img.onerror = function () { this.style.display = 'none'; };
       el.appendChild(img);
-
       var name = document.createElement('span');
       name.className = 'globe-pin__name';
       name.textContent = d.name || '';
       el.appendChild(name);
-
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         sendOutbound('PIN_TAPPED', { contactId: d.id, lat: d.lat, lng: d.lng });
-      });
       el.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           sendOutbound('PIN_TAPPED', { contactId: d.id, lat: d.lat, lng: d.lng });
-        }
-      });
-
       return el;
-    }
-
     function createClusterElement(d) {
-      var el = document.createElement('div');
       el.className = 'globe-cluster';
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
       el.setAttribute('aria-label', d.count + ' contacts');
       el.textContent = d.count > 99 ? '99+' : String(d.count);
-
-      el.addEventListener('click', function (e) {
-        e.stopPropagation();
         sendOutbound('CLUSTER_TAPPED', {
           contactIds: d.contactIds,
           lat: d.lat,
           lng: d.lng,
           count: d.count,
         });
-      });
-      el.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
           sendOutbound('CLUSTER_TAPPED', {
             contactIds: d.contactIds,
             lat: d.lat,
             lng: d.lng,
             count: d.count,
           });
-        }
-      });
-
-      return el;
-    }
-
-    // ---------------------------------------------------------------------------
     // Clustering (simple grid-based)
-    // ---------------------------------------------------------------------------
     function clusterPins(data) {
       if (!data.length) return [];
       var buckets = {};
@@ -266,8 +315,6 @@
         var key = Math.round(p.lat / CLUSTER_RADIUS_DEG) + ':' + Math.round(p.lng / CLUSTER_RADIUS_DEG);
         if (!buckets[key]) buckets[key] = [];
         buckets[key].push(p);
-      });
-
       var result = [];
       Object.keys(buckets).forEach(function (key) {
         var group = buckets[key];
@@ -281,116 +328,66 @@
             sumLat += p.lat;
             sumLng += p.lng;
             ids.push(p.id);
-          });
           result.push({
             __cluster: true,
             lat: sumLat / group.length,
             lng: sumLng / group.length,
             count: group.length,
             contactIds: ids,
-          });
-        }
-      });
       return result;
-    }
-
     function refreshMarkers() {
       globe.htmlElementsData(clusterPins(pins));
-    }
-
-    // ---------------------------------------------------------------------------
     // Arc helpers
-    // ---------------------------------------------------------------------------
     function refreshArcs() {
       maxFrequency = 1;
       arcs.forEach(function (a) {
         if (a.frequency > maxFrequency) maxFrequency = a.frequency;
-      });
       globe.arcsData(arcs);
-    }
-
-    // ---------------------------------------------------------------------------
     // Theme
-    // ---------------------------------------------------------------------------
     function applyTheme(theme) {
       if (theme === 'dark') {
         document.body.classList.add('dark');
-        globe
           .globeImageUrl(EARTH_IMG_NIGHT)
           .atmosphereColor('rgba(100,149,237,0.15)');
       } else {
         document.body.classList.remove('dark');
-        globe
           .globeImageUrl(EARTH_IMG_DAY)
           .atmosphereColor('rgba(65,105,225,0.25)');
-      }
-    }
-
-    // ---------------------------------------------------------------------------
     // JS Bridge
-    // ---------------------------------------------------------------------------
     function sendOutbound(type, payload) {
       var msg = { type: type, payload: payload };
       // Flutter WebView channel (flutter_inappwebview v6)
-      if (window.flutter_inappwebview) {
         window.flutter_inappwebview.callHandler('GlobeBridgeChannel', JSON.stringify(msg));
-      }
       // Web iframe / window.opener
       if (window.parent !== window) {
         window.parent.postMessage(msg, '*');
-      }
-    }
-
     function handleInbound(msg) {
       if (!msg || !msg.type) return;
-
       switch (msg.type) {
         case 'FLY_TO':
           globe.pointOfView(
             { lat: msg.payload.lat, lng: msg.payload.lng, altitude: msg.payload.altitude || 2 },
             msg.payload.durationMs || 1000
           );
-          break;
-
         case 'HIGHLIGHT_CONTACT':
           highlightedId = msg.payload.contactId;
           refreshMarkers();
-          break;
-
         case 'SET_THEME':
           applyTheme(msg.payload.theme);
-          break;
-
         case 'SET_MODE':
           mode = msg.payload.mode || 'explore';
-          break;
-
         case 'SET_PINS':
           pins = Array.isArray(msg.payload.pins) ? msg.payload.pins : [];
-          refreshMarkers();
-          break;
-
         case 'SET_ARCS':
           arcs = Array.isArray(msg.payload.arcs) ? msg.payload.arcs : [];
           refreshArcs();
-          break;
-
         default:
-          break;
-      }
-    }
-
     // Listen for postMessage (web iframe)
     window.addEventListener('message', function (event) {
       handleInbound(event.data);
-    });
-
     // Expose for Flutter JavaScriptChannel
     window.GlobeBridge = { receive: handleInbound };
-
-    // ---------------------------------------------------------------------------
     // Ready
-    // ---------------------------------------------------------------------------
     sendOutbound('READY', { version: BRIDGE_VERSION });
   </script>
 </body>
