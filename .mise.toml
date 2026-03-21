@@ -1,5 +1,6 @@
 [tools]
 node = "22"
 python = "3.12"
+uv = "latest"
 flutter = "3"
 terraform = "1"
