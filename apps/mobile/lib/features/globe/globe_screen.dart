@@ -1,10 +1,12 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:mobile/features/globe/globe_bridge.dart';
+import 'package:mobile/features/globe/globe_focus_provider.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:mobile/features/globe/models/globe_models.dart';
 import 'package:mobile/features/globe/providers/globe_providers.dart';
 import 'package:mobile/features/globe/services/globe_bridge.dart';
@@ -19,6 +21,7 @@ class GlobeScreen extends ConsumerStatefulWidget {
 }
 
 class _GlobeScreenState extends ConsumerState<GlobeScreen> {
+  final _bridge = GlobeBridge();
   late final GlobeBridge _bridge;
   InAppWebViewController? _webViewController;
   bool _globeReady = false;
@@ -26,7 +29,6 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
 
   /// iOS initial limit: 50 contacts, other platforms: 200.
   int get _contactLimit => Platform.isIOS ? 50 : 200;
-
   @override
   void initState() {
     super.initState();
@@ -44,18 +46,39 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<GlobeFocus?>(globeFocusProvider, (_, next) {
+      if (next != null) {
+        _bridge.flyTo(next);
+      }
+    });
+
+    return InAppWebView(
+      initialData: InAppWebViewInitialData(data: _kShellHtml),
+      initialSettings: InAppWebViewSettings(
+        javaScriptEnabled: true,
+        transparentBackground: true,
+      ),
+      onWebViewCreated: (controller) {
+        _bridge.attach(controller);
+      },
+      onLoadStop: (controller, url) async {
+        final focus = ref.read(globeFocusProvider);
+        if (focus != null) {
+          await _bridge.flyTo(focus);
+        }
+      },
   void _onGlobeReady(String version) {
     setState(() => _globeReady = true);
     _syncTheme();
     _loadGlobeData();
   }
-
   void _onPinTapped(String contactId, double lat, double lng) {
     final name = _pins
         .cast<GlobePin?>()
         .firstWhere((p) => p!.id == contactId, orElse: () => null)
         ?.name;
-
     ContactBottomSheet.show(
       context,
       contactId: contactId,
@@ -63,17 +86,11 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
       lat: lat,
       lng: lng,
     );
-  }
-
   void _onClusterTapped(
       List<String> contactIds, double lat, double lng, int count) {
     _bridge.flyTo(lat: lat, lng: lng, altitude: 1.5, durationMs: 800);
-  }
-
   void _onLocationSelected(double lat, double lng) {
     // Reserved for future use (select_location mode).
-  }
-
   void _syncTheme() {
     final themeMode = ref.read(themeModeProvider);
     final brightness = switch (themeMode) {
@@ -83,8 +100,6 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
         WidgetsBinding.instance.platformDispatcher.platformBrightness,
     };
     _bridge.setTheme(brightness == Brightness.dark ? 'dark' : 'light');
-  }
-
   Future<void> _loadGlobeData() async {
     final data =
         await ref.read(globeDataProvider(_contactLimit).future);
@@ -93,10 +108,6 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
     if (data.arcs.isNotEmpty) {
       await _bridge.setArcs(data.arcs);
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Stack(
       children: [
         InAppWebView(
@@ -113,7 +124,6 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
           onWebViewCreated: (controller) async {
             _webViewController = controller;
             _bridge.attach(controller);
-
             controller.addJavaScriptHandler(
               handlerName: 'GlobeBridgeChannel',
               callback: (args) {
@@ -122,23 +132,34 @@ class _GlobeScreenState extends ConsumerState<GlobeScreen> {
                 }
               },
             );
-
             final html = await rootBundle.loadString(
               'assets/globe/index.html',
-            );
             await controller.loadData(
               data: html,
               mimeType: 'text/html',
               encoding: 'utf-8',
               baseUrl: WebUri('https://globe.local'),
-            );
           },
         ),
         if (!_globeReady)
           const Center(
             child: CircularProgressIndicator.adaptive(),
-          ),
       ],
     );
   }
 }
+
+const _kShellHtml = '''
+<!DOCTYPE html>
+<html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body>
+<script>
+  window.flyTo = function(lat, lng, zoom) {
+    // Bridge target — replaced by CesiumJS / MapLibre in production
+    console.log('flyTo', lat, lng, zoom);
+  };
+</script>
+</body>
+</html>
+''';
