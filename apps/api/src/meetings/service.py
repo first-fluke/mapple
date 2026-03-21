@@ -50,6 +50,32 @@ class MeetingService:
             raise NotFoundException(message=f"Meeting {meeting_id} not found")
         participants = await self.repo.get_participants(meeting.id)
         return await self._build_meeting_out(meeting, participants)
+from __future__ import annotations
+from src.meetings.models import Meeting
+    def __init__(self, session: AsyncSession) -> None:
+    async def list(
+        self,
+        *,
+        cursor: int | None = None,
+        per_page: int = 20,
+        date_from: datetime.datetime | None = None,
+        date_to: datetime.datetime | None = None,
+        contact_id: int | None = None,
+    ) -> tuple[list[Meeting], dict[int, list[int]], bool]:
+        meetings, has_more = await self.repo.list(
+            cursor=cursor,
+            per_page=per_page,
+            date_from=date_from,
+            date_to=date_to,
+            contact_id=contact_id,
+        meeting_ids = [m.id for m in meetings]
+        attendees_map = await self.repo.get_attendee_contact_ids_bulk(meeting_ids) if meeting_ids else {}
+        return meetings, attendees_map, has_more
+    async def get(self, meeting_id: int) -> tuple[Meeting, list[int]]:
+        meeting = await self.repo.get(meeting_id)
+            raise NotFoundException("Meeting not found")
+        attendee_ids = await self.repo.get_attendee_contact_ids(meeting_id)
+        return meeting, attendee_ids
 
     async def create(
         self,
@@ -125,3 +151,16 @@ class MeetingService:
             user_id,
             contact_ids,
         )
+        description: str | None,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        attendee_contact_ids: list[int],
+    ) -> tuple[Meeting, list[int]]:
+            description=description,
+            start_time=start_time,
+            end_time=end_time,
+            attendee_contact_ids=attendee_contact_ids,
+        return meeting, attendee_contact_ids
+        meeting = await self.repo.get(meeting_id)
+            raise NotFoundException("Meeting not found")
+    async def delete(self, meeting_id: int) -> None:
