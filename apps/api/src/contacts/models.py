@@ -44,3 +44,13 @@ class Contact(Base):
     )
 
     __table_args__ = (Index("ix_contacts_not_deleted", "user_id", postgresql_where=(deleted_at.is_(None))),)
+import datetime
+from sqlalchemy import ForeignKey, String, func
+from sqlalchemy.orm import Mapped, mapped_column
+    __tablename__ = "contact"
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organization.id", ondelete="SET NULL"),
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),

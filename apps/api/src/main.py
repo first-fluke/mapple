@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from src.auth.router import router as auth_router
 from src.contacts.router import router as contacts_router
 from src.lib.database import engine
 from src.lib.exceptions import (
@@ -11,6 +12,9 @@ from src.lib.exceptions import (
     make_error_response,
 )
 from src.lib.redis import redis
+from src.meetings.router import router as meetings_router
+from src.organizations.router import router as organizations_router
+from src.upload.router import router as upload_router
 
 
 @asynccontextmanager
@@ -32,6 +36,10 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
     return make_error_response(exc)
 
 
+app.include_router(auth_router)
+app.include_router(organizations_router)
+app.include_router(upload_router)
+app.include_router(meetings_router)
 app.include_router(contacts_router)
 
 

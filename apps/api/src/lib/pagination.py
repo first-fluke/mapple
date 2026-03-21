@@ -1,6 +1,16 @@
+import base64
+
 from pydantic import BaseModel
 
 from src.lib.exceptions import ApiResponse
+
+
+def encode_cursor(value: int) -> str:
+    return base64.urlsafe_b64encode(str(value).encode()).decode()
+
+
+def decode_cursor(cursor: str) -> int:
+    return int(base64.urlsafe_b64decode(cursor.encode()).decode())
 
 
 class PaginationMeta(BaseModel):
