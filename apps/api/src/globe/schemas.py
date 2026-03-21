@@ -10,6 +10,12 @@ class GlobePinOut(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class BboxQuery(BaseModel):
+    sw_lat: float
+    sw_lng: float
+    ne_lat: float
+    ne_lng: float
+    avatar_url: str | None
 
 class GlobeArcOut(BaseModel):
     id: str
@@ -22,7 +28,16 @@ class GlobeArcOut(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class GlobeClusterOut(BaseModel):
+    lat: float
+    lng: float
+    count: int
+    contact_ids: list[str]
+
 
 class GlobeDataOut(BaseModel):
     pins: list[GlobePinOut]
     arcs: list[GlobeArcOut]
+    clusters: list[GlobeClusterOut]
+
+    model_config = {"from_attributes": True}
