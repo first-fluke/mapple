@@ -25,15 +25,20 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ),
-        FTile(
-          prefixIcon: FIcon(FAssets.icons.sun),
-          title: const Text('Theme'),
-          suffixIcon: FIcon(
-            themeMode == ThemeMode.dark
-                ? FAssets.icons.moon
-                : FAssets.icons.sun,
+        Semantics(
+          label: 'Theme: ${themeMode.name}',
+          hint: 'Double tap to toggle theme',
+          button: true,
+          child: FTile(
+            prefixIcon: FIcon(FAssets.icons.sun),
+            title: const Text('Theme'),
+            suffixIcon: FIcon(
+              themeMode == ThemeMode.dark
+                  ? FAssets.icons.moon
+                  : FAssets.icons.sun,
+            ),
+            onPress: () => ref.read(themeModeProvider.notifier).toggle(),
           ),
-          onPress: () => ref.read(themeModeProvider.notifier).toggle(),
         ),
       ],
     );
