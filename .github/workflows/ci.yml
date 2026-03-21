@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'biome.json'
+            api:
+              - 'apps/api/**'
+            mobile:
+              - 'apps/mobile/**'
+
+  web:
+    name: Web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web
+      - name: Lint
+        run: npx @biomejs/biome check apps/web
+      - name: Type check
+        run: npx tsc --noEmit
+        working-directory: apps/web
+      - name: Test
+        run: npx vitest run
+        working-directory: apps/web
+
+  api:
+    name: API
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Install dependencies
+        run: uv sync --frozen
+        working-directory: apps/api
+      - name: Lint
+        run: uv run ruff check .
+        working-directory: apps/api
+      - name: Type check
+        run: uv run mypy src
+        working-directory: apps/api
+      - name: Test
+        run: uv run pytest
+        working-directory: apps/api
+
+  mobile:
+    name: Mobile
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Analyze
+        run: flutter analyze
+        working-directory: apps/mobile
+      - name: Test
+        run: flutter test
+        working-directory: apps/mobile
+
+  ci-status:
+    name: CI Status
+    if: always()
+    needs: [web, api, mobile]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CI results
+        run: |
+          if [[ "${{ needs.web.result }}" == "failure" || \
+                "${{ needs.api.result }}" == "failure" || \
+                "${{ needs.mobile.result }}" == "failure" ]]; then
+            echo "::error::CI failed"
+            exit 1
+          fi
+          echo "CI passed"
