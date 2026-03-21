@@ -102,6 +102,34 @@ export default function GlobePage() {
     <div className="-m-4 -mb-20 relative h-[calc(100vh-theme(spacing.20))] md:-mb-4 md:h-[calc(100vh)]">
       <iframe ref={iframeRef} src="/globe/index.html" className="h-full w-full border-0" title="Globe" />
       <ProfileCard pin={selectedPin} open={drawerOpen} onOpenChange={handleDrawerChange} />
+import { useAtom } from 'jotai';
+import { OnboardingOverlay } from '@/components/onboarding-overlay';
+import { onboardingCompletedAtom } from '@/lib/atoms/onboarding';
+export default function HomePage() {
+  const [completed] = useAtom(onboardingCompletedAtom);
+  if (!completed) {
+    return <OnboardingOverlay />;
+  }
+import { Suspense } from 'react';
+import { GlobeDynamic, GlobeErrorBoundary, GlobeSkeleton } from '@/components/globe';
+import { useWindowSize } from '@/hooks/use-window-size';
+const SAMPLE_PINS = [
+  { id: '1', lat: 37.5665, lng: 126.978, name: 'Seoul' },
+  { id: '2', lat: 35.6762, lng: 139.6503, name: 'Tokyo' },
+  { id: '3', lat: 40.7128, lng: -74.006, name: 'New York' },
+];
+export default function Home() {
+  const size = useWindowSize();
+    <main className="relative h-screen w-screen overflow-hidden bg-background">
+      <GlobeErrorBoundary>
+        <Suspense fallback={<GlobeSkeleton />}>
+          <GlobeDynamic pins={SAMPLE_PINS} width={size?.width} height={size?.height} />
+        </Suspense>
+      </GlobeErrorBoundary>
+    </main>
+    <div className="flex min-h-full flex-col items-center justify-center">
+      <h1 className="text-4xl font-bold">Globe CRM</h1>
+      <p className="mt-4 text-muted-foreground">Customer relationship management with geospatial capabilities</p>
     </div>
   );
 }
