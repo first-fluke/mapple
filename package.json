@@ -1,0 +1,11 @@
+{
+  "name": "globe-crm",
+  "private": true,
+  "scripts": {
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0"
+  }
+}
