@@ -1,0 +1,28 @@
+# Globe CRM - Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Each line is a file pattern followed by one or more owners.
+# These owners will be automatically requested for review
+# when someone opens a pull request that modifies matching files.
+
+# Default owner for everything in the repo
+* @globe-crm/core
+
+# Frontend
+/src/app/ @globe-crm/frontend
+/src/components/ @globe-crm/frontend
+/src/hooks/ @globe-crm/frontend
+/src/styles/ @globe-crm/frontend
+
+# Backend
+/src/api/ @globe-crm/backend
+/src/services/ @globe-crm/backend
+/src/lib/ @globe-crm/backend
+
+# Data
+/src/db/ @globe-crm/data
+/prisma/ @globe-crm/data
+/migrations/ @globe-crm/data
+
+# CI/CD
+/.github/ @globe-crm/core
