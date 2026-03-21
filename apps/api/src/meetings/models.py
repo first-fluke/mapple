@@ -1,0 +1,35 @@
+import datetime
+
+from sqlalchemy import ForeignKey, PrimaryKeyConstraint, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.lib.database import Base
+
+
+class Meeting(Base):
+    __tablename__ = "meeting"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    start_time: Mapped[datetime.datetime]
+    end_time: Mapped[datetime.datetime]
+    location: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class MeetingAttendee(Base):
+    __tablename__ = "meeting_attendee"
+    __table_args__ = (PrimaryKeyConstraint("meeting_id", "contact_id"),)
+
+    meeting_id: Mapped[int] = mapped_column(
+        ForeignKey("meeting.id", ondelete="CASCADE"),
+    )
+    contact_id: Mapped[int] = mapped_column(
+        ForeignKey("contact.id", ondelete="CASCADE"),
+    )
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
