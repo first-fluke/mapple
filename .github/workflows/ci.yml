@@ -11,72 +11,98 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint & Format
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'biome.json'
+            api:
+              - 'apps/api/**'
+            mobile:
+              - 'apps/mobile/**'
+
+  web:
+    name: Web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: jdx/mise-action@v2
-
       - name: Install dependencies
         run: npm ci
+        working-directory: apps/web
+      - name: Lint
+        run: npx @biomejs/biome check apps/web
+      - name: Type check
+        run: npx tsc --noEmit
+        working-directory: apps/web
+      - name: Test
+        run: npx vitest run
+        working-directory: apps/web
 
-      - name: Run Biome checks
-        run: npx @biomejs/biome check .
-
-  test:
-    name: Test
+  api:
+    name: API
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
-    needs: lint
-    services:
-      postgres:
-        image: postgis/postgis:16-3.5
-        env:
-          POSTGRES_USER: globe
-          POSTGRES_PASSWORD: globe
-          POSTGRES_DB: globe_crm
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U globe -d globe_crm"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-
       - uses: jdx/mise-action@v2
-
       - name: Install dependencies
-        run: npm ci
+        run: uv sync --frozen
+        working-directory: apps/api
+      - name: Lint
+        run: uv run ruff check .
+        working-directory: apps/api
+      - name: Type check
+        run: uv run mypy src
+        working-directory: apps/api
+      - name: Test
+        run: uv run pytest
+        working-directory: apps/api
 
-      - name: Run tests
-        run: npm test
-        env:
-          DATABASE_URL: postgresql://globe:globe@localhost:5432/globe_crm
-          REDIS_URL: redis://localhost:6379
-
-  build:
-    name: Build
+  mobile:
+    name: Mobile
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
     runs-on: ubuntu-latest
-    needs: lint
     steps:
       - uses: actions/checkout@v4
-
       - uses: jdx/mise-action@v2
+      - name: Analyze
+        run: flutter analyze
+        working-directory: apps/mobile
+      - name: Test
+        run: flutter test
+        working-directory: apps/mobile
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
+  ci-status:
+    name: CI Status
+    if: always()
+    needs: [web, api, mobile]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CI results
+        run: |
+          if [[ "${{ needs.web.result }}" == "failure" || \
+                "${{ needs.api.result }}" == "failure" || \
+                "${{ needs.mobile.result }}" == "failure" ]]; then
+            echo "::error::CI failed"
+            exit 1
+          fi
+          echo "CI passed"

@@ -1,5 +1,5 @@
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -7,8 +7,6 @@ from fastapi.responses import JSONResponse
 from src.lib.database import engine
 from src.lib.exceptions import (
     AppException,
-    ErrorDetail,
-    ErrorResponse,
     make_error_response,
 )
 from src.lib.redis import redis

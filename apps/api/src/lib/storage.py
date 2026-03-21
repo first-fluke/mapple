@@ -1,6 +1,6 @@
 import os
 
-from miniopy_async import Minio
+from miniopy_async import Minio  # type: ignore[attr-defined]
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")

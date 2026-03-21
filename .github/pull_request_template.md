@@ -14,9 +14,14 @@ Closes FIR-
 
 ## Test Plan
 
-- [ ] Tests pass locally (`npm test`)
-- [ ] Linting passes (`npx @biomejs/biome check .`)
+- [ ] CI passes (web / api / mobile)
 - [ ] Manually verified changes work as expected
+
+### App-specific checks
+
+- [ ] **Web** — `npx @biomejs/biome check apps/web && npx tsc --noEmit && npx vitest run`
+- [ ] **API** — `uv run ruff check . && uv run mypy src && uv run pytest`
+- [ ] **Mobile** — `flutter analyze && flutter test`
 
 ## Screenshots
 
