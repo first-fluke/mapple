@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Globe</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body { background: #09090b; touch-action: none; }
+    body.light { background: #ffffff; }
+    #globe-container { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="globe-container"></div>
+  <script src="https://unpkg.com/globe.gl@2"></script>
+  <script>
+    let globe = null;
+    let currentTheme = 'dark';
+
+    const themes = {
+      dark: {
+        background: 'rgba(0,0,0,0)',
+        globeImage: '//unpkg.com/three-globe/example/img/earth-night.jpg',
+        atmosphereColor: '#3b82f6',
+        pointColor: '#3b82f6',
+        arcColor: ['#3b82f6', '#8b5cf6'],
+      },
+      light: {
+        background: 'rgba(0,0,0,0)',
+        globeImage: '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+        atmosphereColor: '#2563eb',
+        pointColor: '#2563eb',
+        arcColor: ['#2563eb', '#7c3aed'],
+      },
+    };
+
+    function initGlobe() {
+      const container = document.getElementById('globe-container');
+      const theme = themes[currentTheme];
+
+      globe = Globe()
+        .backgroundColor(theme.background)
+        .globeImageUrl(theme.globeImage)
+        .showAtmosphere(true)
+        .atmosphereColor(theme.atmosphereColor)
+        .atmosphereAltitude(0.25)
+        .pointsData([])
+        .pointAltitude('altitude')
+        .pointColor(() => theme.pointColor)
+        .pointRadius('radius')
+        .pointsMerge(true)
+        .arcsData([])
+        .arcColor('color')
+        .arcDashLength(0.4)
+        .arcDashGap(0.2)
+        .arcDashAnimateTime(1500)
+        .onPointClick(function(point) {
+          sendToFlutter('pointClick', point);
+        })
+        (container);
+
+      globe.controls().autoRotate = true;
+      globe.controls().autoRotateSpeed = 0.5;
+      globe.controls().enableZoom = true;
+
+      const resizeObserver = new ResizeObserver(function() {
+        globe.width(container.clientWidth);
+        globe.height(container.clientHeight);
+      });
+      resizeObserver.observe(container);
+
+      sendToFlutter('ready', { status: 'initialized' });
+    }
+
+    function sendToFlutter(type, payload) {
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler(
+          'onGlobeEvent',
+          JSON.stringify({ type: type, payload: payload })
+        );
+      }
+    }
+
+    function handleFlutterMessage(json) {
+      var message = JSON.parse(json);
+      switch (message.type) {
+        case 'setPoints':
+          if (globe) {
+            globe.pointsData(message.payload.points || []);
+          }
+          break;
+        case 'setArcs':
+          if (globe) {
+            globe.arcsData(message.payload.arcs || []);
+          }
+          break;
+        case 'focusPoint':
+          if (globe) {
+            var p = message.payload;
+            globe.pointOfView({ lat: p.lat, lng: p.lng, altitude: p.altitude || 2 }, 1000);
+          }
+          break;
+        case 'setTheme':
+          currentTheme = message.payload.theme || 'dark';
+          applyTheme();
+          break;
+        case 'setAutoRotate':
+          if (globe) {
+            globe.controls().autoRotate = message.payload.enabled;
+          }
+          break;
+      }
+    }
+
+    function applyTheme() {
+      var theme = themes[currentTheme];
+      document.body.className = currentTheme === 'light' ? 'light' : '';
+      if (globe) {
+        globe
+          .globeImageUrl(theme.globeImage)
+          .atmosphereColor(theme.atmosphereColor)
+          .pointColor(function() { return theme.pointColor; });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initGlobe);
+  </script>
+</body>
+</html>
