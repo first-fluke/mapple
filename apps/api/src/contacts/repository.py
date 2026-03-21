@@ -1,8 +1,10 @@
-from sqlalchemy import select, func as sa_func
+import base64
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import Contact
-import base64
+from sqlalchemy import select, func as sa_func
 from typing import Any
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Point
@@ -16,21 +18,71 @@ class ContactRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def find_paginated(
+    async def find_by_user_paginated(
         self,
-        *,
         user_id: int,
-        cursor: int | None = None,
+        *,
+        cursor: str | None = None,
         per_page: int = 20,
         search: str | None = None,
         sort: str = "created_at_desc",
-    ) -> tuple[list[Contact], bool]:
+        has_email: bool | None = None,
+        has_phone: bool | None = None,
+    ) -> tuple[list[Contact], str | None, bool]:
         stmt = select(Contact).where(Contact.user_id == user_id)
+
         if search:
             stmt = stmt.where(Contact.name.ilike(f"%{search}%"))
+
+        if has_email is True:
+            stmt = stmt.where(Contact.email.isnot(None), Contact.email != "")
+        if has_phone is True:
+            stmt = stmt.where(Contact.phone.isnot(None), Contact.phone != "")
+
+        match sort:
+            case "name_asc":
+                stmt = stmt.order_by(Contact.name.asc(), Contact.id.asc())
+            case "name_desc":
+                stmt = stmt.order_by(Contact.name.desc(), Contact.id.desc())
+            case "created_at_asc":
+                stmt = stmt.order_by(Contact.created_at.asc(), Contact.id.asc())
+            case _:
+                stmt = stmt.order_by(Contact.created_at.desc(), Contact.id.desc())
+
+        offset = _decode_cursor(cursor) if cursor else 0
+        stmt = stmt.offset(offset).limit(per_page + 1)
+
+        result = await self.session.execute(stmt)
+        items = list(result.scalars().all())
+
+        has_more = len(items) > per_page
+        if has_more:
+            items = items[:per_page]
+
+        next_cursor = _encode_cursor(offset + per_page) if has_more else None
+
+        return items, next_cursor, has_more
+
+    async def count_by_user(self, user_id: int) -> int:
+        stmt = select(func.count()).select_from(Contact).where(Contact.user_id == user_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+
+def _encode_cursor(offset: int) -> str:
+    return base64.urlsafe_b64encode(str(offset).encode()).decode()
+
+
+def _decode_cursor(cursor: str) -> int:
+    try:
+        return int(base64.urlsafe_b64decode(cursor).decode())
+    except Exception:
+        return 0
+    async def find_paginated(
+        cursor: int | None = None,
+    ) -> tuple[list[Contact], bool]:
         if cursor:
             stmt = stmt.where(Contact.id < cursor)
-
         # sorting
         sort_map = {
             "name_asc": Contact.name.asc(),
@@ -41,33 +93,18 @@ class ContactRepository:
         order = sort_map.get(sort, Contact.created_at.desc())
         stmt = stmt.order_by(order, Contact.id.desc())
         stmt = stmt.limit(per_page + 1)
-
-        result = await self.session.execute(stmt)
-        items = list(result.scalars().all())
-        has_more = len(items) > per_page
-        if has_more:
-            items = items[:per_page]
         return items, has_more
-
     async def count(self, *, user_id: int, search: str | None = None) -> int:
         stmt = select(sa_func.count()).select_from(Contact).where(Contact.user_id == user_id)
-        if search:
-            stmt = stmt.where(Contact.name.ilike(f"%{search}%"))
-        result = await self.session.execute(stmt)
-        return result.scalar_one()
-
     async def find_by_id(self, contact_id: int, user_id: int) -> Contact | None:
         stmt = select(Contact).where(Contact.id == contact_id, Contact.user_id == user_id)
-        result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
-
     async def create(self, *, user_id: int, name: str, email: str | None, phone: str | None) -> Contact:
         contact = Contact(user_id=user_id, name=name, email=email, phone=phone)
         self.session.add(contact)
         await self.session.commit()
         await self.session.refresh(contact)
         return contact
-
     async def update(self, contact: Contact, *, name: str | None = None, email: str | None = None, phone: str | None = None) -> Contact:
         if name is not None:
             contact.name = name
@@ -75,13 +112,8 @@ class ContactRepository:
             contact.email = email
         if phone is not None:
             contact.phone = phone
-        await self.session.commit()
-        await self.session.refresh(contact)
-        return contact
-
     async def delete(self, contact: Contact) -> None:
         await self.session.delete(contact)
-        await self.session.commit()
     async def find_by_id(self, *, user_id: int, contact_id: int) -> Contact | None:
         stmt = (
             select(Contact)
@@ -97,7 +129,6 @@ class ContactRepository:
         country: str | None = None,
         city: str | None = None,
         q: str | None = None,
-    ) -> tuple[list[Contact], str | None, bool]:
             .order_by(Contact.id.desc())
         if cursor is not None:
         if tag:
