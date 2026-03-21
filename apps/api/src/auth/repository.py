@@ -41,3 +41,15 @@ class AuthRepository:
         await self.session.commit()
         await self.session.refresh(user)
         return user
+
+    async def update(self, user: UserAuth, **kwargs: str | None) -> UserAuth:
+        for key, value in kwargs.items():
+            if value is not None:
+                setattr(user, key, value)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
+    async def delete(self, user: UserAuth) -> None:
+        await self.session.delete(user)
+        await self.session.commit()
