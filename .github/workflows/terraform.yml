@@ -28,7 +28,7 @@ jobs:
       id-token: write
       pull-requests: write  # For PR comments
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - id: auth
         uses: google-github-actions/auth@v2
