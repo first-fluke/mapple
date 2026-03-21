@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from src.contacts.router import router as contacts_router
 from src.lib.database import engine
 from src.lib.exceptions import (
     AppException,
@@ -29,6 +30,9 @@ app = FastAPI(
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     return make_error_response(exc)
+
+
+app.include_router(contacts_router)
 
 
 @app.get("/health")

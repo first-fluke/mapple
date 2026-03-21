@@ -24,3 +24,9 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict[str, Any]:
     return decode_token(credentials.credentials)
+
+
+async def get_current_user_id(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> int:
+    return int(current_user["sub"])
