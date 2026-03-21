@@ -82,6 +82,8 @@ class Contact {
   final double? latitude;
   final double? longitude;
   final String? locationName;
+  final int id;
+  final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -101,6 +103,7 @@ class Contact {
     this.latitude,
     this.longitude,
     this.locationName,
+    required this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -152,4 +155,12 @@ class Contact {
     }
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
+  factory Contact.fromJson(Map<String, dynamic> json) {
+      id: json['id'] as int,
+      userId: json['user_id'] as int,
+      name: json['name'] as String,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
 }

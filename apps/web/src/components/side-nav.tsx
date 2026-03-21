@@ -16,7 +16,10 @@ export function SideNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden md:flex h-screen w-16 flex-col items-center border-r bg-sidebar py-4 gap-2">
+    <nav
+      aria-label="Main navigation"
+      className="hidden md:flex h-screen w-16 flex-col items-center border-r bg-sidebar py-4 gap-2"
+    >
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         return (
