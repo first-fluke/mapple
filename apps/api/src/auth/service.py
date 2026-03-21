@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.models import UserAuth
 from src.auth.repository import AuthRepository
+from src.auth.schemas import ProfileUpdate
 from src.lib.auth import JWT_ALGORITHM, JWT_SECRET
 from src.lib.exceptions import AppException, UnauthorizedException
 
@@ -84,6 +85,18 @@ class AuthService:
         if not user:
             raise UnauthorizedException(message="User not found")
         return user
+
+    async def update_me(self, user_id: int, data: ProfileUpdate) -> UserAuth:
+        user = await self.repo.find_by_id(user_id)
+        if not user:
+            raise UnauthorizedException(message="User not found")
+        return await self.repo.update(user, name=data.name)
+
+    async def delete_me(self, user_id: int) -> None:
+        user = await self.repo.find_by_id(user_id)
+        if not user:
+            raise UnauthorizedException(message="User not found")
+        await self.repo.delete(user)
 
     def _create_access_token(self, user: UserAuth) -> str:
         now = datetime.datetime.now(datetime.UTC)
