@@ -6,23 +6,23 @@
 # when someone opens a pull request that modifies matching files.
 
 # Default owner for everything in the repo
-* @globe-crm/core
+* @gracefullight
 
 # Frontend
-/src/app/ @globe-crm/frontend
-/src/components/ @globe-crm/frontend
-/src/hooks/ @globe-crm/frontend
-/src/styles/ @globe-crm/frontend
+/src/app/ @gracefullight
+/src/components/ @gracefullight
+/src/hooks/ @gracefullight
+/src/styles/ @gracefullight
 
 # Backend
-/src/api/ @globe-crm/backend
-/src/services/ @globe-crm/backend
-/src/lib/ @globe-crm/backend
+/src/api/ @gracefullight
+/src/services/ @gracefullight
+/src/lib/ @gracefullight
 
 # Data
-/src/db/ @globe-crm/data
-/prisma/ @globe-crm/data
-/migrations/ @globe-crm/data
+/src/db/ @gracefullight
+/prisma/ @gracefullight
+/migrations/ @gracefullight
 
 # CI/CD
-/.github/ @globe-crm/core
+/.github/ @gracefullight
