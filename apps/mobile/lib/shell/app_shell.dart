@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
@@ -44,6 +46,20 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
     return FScaffold(
+      content: Stack(
+        children: [
+          navigationShell,
+          Positioned(
+            top: Platform.isIOS ? 16 : null,
+            bottom: Platform.isAndroid ? 16 : null,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () {},
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ],
+      ),
       content: widget.navigationShell,
       footer: FBottomNavigationBar(
         index: widget.navigationShell.currentIndex,
