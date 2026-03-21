@@ -1,25 +1,43 @@
 import datetime
 
+from pydantic import BaseModel, Field
+
+
 from pydantic import BaseModel
 from datetime import datetime
-from pydantic import BaseModel, Field
 class ContactCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     email: str | None = Field(default=None, max_length=255)
     phone: str | None = Field(default=None, max_length=50)
+    latitude: float | None = None
+    longitude: float | None = None
+    country: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=255)
+    tag_ids: list[int] = Field(default_factory=list)
+    experiences: list["ExperienceInput"] = Field(default_factory=list)
+
+
+class ExperienceInput(BaseModel):
+    organization_id: int
+    role: str | None = Field(default=None, max_length=255)
+    major: str | None = Field(default=None, max_length=255)
+
+
 class ContactUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    email: str | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    latitude: float | None = None
+    longitude: float | None = None
+    country: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=255)
 class TagOut(BaseModel):
     id: int
     name: str
     model_config = {"from_attributes": True}
     name: str = Field(max_length=255)
-    country: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=100)
-    latitude: float | None = None
-    longitude: float | None = None
     notes: str | None = None
-    tag_ids: list[int] = Field(default_factory=list)
 class ContactPatch(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     tag_ids: list[int] | None = None
@@ -31,14 +49,32 @@ class ContactOut(BaseModel):
     name: str
     email: str | None
     phone: str | None
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
-
-    model_config = {"from_attributes": True}
-    country: str | None
-    city: str | None
     latitude: float | None
     longitude: float | None
+    country: str | None
+    city: str | None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    tags: list["TagOut"] = []
+    experiences: list["ExperienceOut"] = []
+
+    model_config = {"from_attributes": True}
+
+
+class TagOut(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
+class ExperienceOut(BaseModel):
+    id: int
+    organization_id: int
+    role: str | None
+    major: str | None
+
+    model_config = {"from_attributes": True}
     notes: str | None
     tags: list[TagOut]
     created_at: datetime

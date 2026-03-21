@@ -1,14 +1,15 @@
-import base64
-
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import Contact
+from src.experiences.models import Experience
+from src.tags.models import ContactTag, Tag
+import base64
+from sqlalchemy import func, select
 from sqlalchemy import select, func as sa_func
 from typing import Any
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Point
-from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from src.contacts.models import Contact, contact_tags
 from src.tags.models import Tag
@@ -18,10 +19,62 @@ class ContactRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def find_by_user_paginated(
+    async def find_by_user(self, user_id: int) -> list[Contact]:
+        stmt = (
+            select(Contact)
+            .where(Contact.user_id == user_id)
+            .order_by(Contact.created_at.desc())
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def find_by_id(self, contact_id: int, user_id: int) -> Contact | None:
+        stmt = select(Contact).where(
+            Contact.id == contact_id,
+            Contact.user_id == user_id,
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create(
         self,
-        user_id: int,
         *,
+        user_id: int,
+        name: str,
+        email: str | None,
+        phone: str | None,
+        latitude: float | None,
+        longitude: float | None,
+        country: str | None,
+        city: str | None,
+    ) -> Contact:
+        contact = Contact(
+            user_id=user_id,
+            name=name,
+            email=email,
+            phone=phone,
+            latitude=latitude,
+            longitude=longitude,
+            country=country,
+            city=city,
+        )
+        self.session.add(contact)
+        await self.session.flush()
+        return contact
+
+    async def update(
+        self,
+        contact: Contact,
+        *,
+        name: str | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        country: str | None = None,
+        city: str | None = None,
+    ) -> Contact:
+    async def find_by_user_paginated(
         cursor: str | None = None,
         per_page: int = 20,
         search: str | None = None,
@@ -30,15 +83,12 @@ class ContactRepository:
         has_phone: bool | None = None,
     ) -> tuple[list[Contact], str | None, bool]:
         stmt = select(Contact).where(Contact.user_id == user_id)
-
         if search:
             stmt = stmt.where(Contact.name.ilike(f"%{search}%"))
-
         if has_email is True:
             stmt = stmt.where(Contact.email.isnot(None), Contact.email != "")
         if has_phone is True:
             stmt = stmt.where(Contact.phone.isnot(None), Contact.phone != "")
-
         match sort:
             case "name_asc":
                 stmt = stmt.order_by(Contact.name.asc(), Contact.id.asc())
@@ -48,31 +98,19 @@ class ContactRepository:
                 stmt = stmt.order_by(Contact.created_at.asc(), Contact.id.asc())
             case _:
                 stmt = stmt.order_by(Contact.created_at.desc(), Contact.id.desc())
-
         offset = _decode_cursor(cursor) if cursor else 0
         stmt = stmt.offset(offset).limit(per_page + 1)
-
-        result = await self.session.execute(stmt)
         items = list(result.scalars().all())
-
         has_more = len(items) > per_page
         if has_more:
             items = items[:per_page]
-
         next_cursor = _encode_cursor(offset + per_page) if has_more else None
-
         return items, next_cursor, has_more
-
     async def count_by_user(self, user_id: int) -> int:
         stmt = select(func.count()).select_from(Contact).where(Contact.user_id == user_id)
-        result = await self.session.execute(stmt)
         return result.scalar_one()
-
-
 def _encode_cursor(offset: int) -> str:
     return base64.urlsafe_b64encode(str(offset).encode()).decode()
-
-
 def _decode_cursor(cursor: str) -> int:
     try:
         return int(base64.urlsafe_b64decode(cursor).decode())
@@ -96,15 +134,11 @@ def _decode_cursor(cursor: str) -> int:
         return items, has_more
     async def count(self, *, user_id: int, search: str | None = None) -> int:
         stmt = select(sa_func.count()).select_from(Contact).where(Contact.user_id == user_id)
-    async def find_by_id(self, contact_id: int, user_id: int) -> Contact | None:
         stmt = select(Contact).where(Contact.id == contact_id, Contact.user_id == user_id)
-        return result.scalar_one_or_none()
     async def create(self, *, user_id: int, name: str, email: str | None, phone: str | None) -> Contact:
         contact = Contact(user_id=user_id, name=name, email=email, phone=phone)
-        self.session.add(contact)
         await self.session.commit()
         await self.session.refresh(contact)
-        return contact
     async def update(self, contact: Contact, *, name: str | None = None, email: str | None = None, phone: str | None = None) -> Contact:
         if name is not None:
             contact.name = name
@@ -112,10 +146,50 @@ def _decode_cursor(cursor: str) -> int:
             contact.email = email
         if phone is not None:
             contact.phone = phone
+        if latitude is not None:
+            contact.latitude = latitude
+        if longitude is not None:
+            contact.longitude = longitude
+        if country is not None:
+            contact.country = country
+        if city is not None:
+            contact.city = city
+        await self.session.flush()
+        return contact
+
     async def delete(self, contact: Contact) -> None:
         await self.session.delete(contact)
-    async def find_by_id(self, *, user_id: int, contact_id: int) -> Contact | None:
+        await self.session.flush()
+
+    async def get_tags(self, contact_id: int) -> list[Tag]:
         stmt = (
+            select(Tag)
+            .join(ContactTag, Tag.id == ContactTag.tag_id)
+            .where(ContactTag.contact_id == contact_id)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def set_tags(self, contact_id: int, tag_ids: list[int]) -> None:
+        # Remove existing tags
+        stmt = select(ContactTag).where(ContactTag.contact_id == contact_id)
+        result = await self.session.execute(stmt)
+        for ct in result.scalars().all():
+            await self.session.delete(ct)
+        # Add new tags
+        for tag_id in tag_ids:
+            self.session.add(ContactTag(contact_id=contact_id, tag_id=tag_id))
+        await self.session.flush()
+
+    async def get_experiences(self, contact_id: int) -> list[Experience]:
+        stmt = (
+            select(Experience)
+            .where(Experience.contact_id == contact_id)
+            .order_by(Experience.created_at.desc())
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+    async def find_by_id(self, *, user_id: int, contact_id: int) -> Contact | None:
             select(Contact)
             .options(selectinload(Contact.tags))
             .where(
@@ -123,7 +197,6 @@ def _decode_cursor(cursor: str) -> int:
                 Contact.user_id == user_id,
                 Contact.deleted_at.is_(None),
             )
-        )
     async def list_contacts(
         tag: str | None = None,
         country: str | None = None,
@@ -161,7 +234,6 @@ def _decode_cursor(cursor: str) -> int:
         contact = Contact(user_id=user_id, **data)
         if latitude is not None and longitude is not None:
             contact.location = from_shape(Point(longitude, latitude), srid=4326)
-        await self.session.flush()
         if tag_ids:
             await self._set_tags(contact, tag_ids)
         await self.session.refresh(contact, attribute_names=["tags"])
