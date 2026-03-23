@@ -10,48 +10,19 @@ concurrency:
   group: deploy-api
   cancel-in-progress: false
 
-env:
-  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-  GCP_REGION: ${{ vars.GCP_REGION }}
-  GAR_REPOSITORY: globe-crm
-  SERVICE_NAME: globe-crm-api
-  WORKLOAD_IDENTITY_PROVIDER: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-  SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
 jobs:
   deploy:
-    name: Build & Deploy
+    name: Deploy to Fly.io
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # Required for OIDC
     steps:
       - uses: actions/checkout@v6
 
-      - id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+      - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
-
-      - name: Build and push Docker image
-        id: build
-        run: |
-          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}"
-          TAG="${{ github.sha }}"
-          docker build -t "${IMAGE}:${TAG}" -t "${IMAGE}:latest" apps/api
-          docker push "${IMAGE}:${TAG}"
-          docker push "${IMAGE}:latest"
-          echo "image=${IMAGE}:${TAG}" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.GCP_REGION }}
-          image: ${{ steps.build.outputs.image }}
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        working-directory: apps/api
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
