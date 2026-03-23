@@ -1,0 +1,9 @@
+{
+  "id": "71571a5a-7711-4e81-b82b-4ec583471cfc",
+  "issueId": "b62722c8-db04-42d5-9e55-125516d04b65",
+  "workspacePath": "/Users/gracefullight/workspace/mapple/FIR-64",
+  "startedAt": "2026-03-23T09:54:48.871Z",
+  "finishedAt": "2026-03-23T09:56:12.058Z",
+  "exitCode": 0,
+  "agentOutput": "Done. Here's the work summary:\n\n## Work Summary\n\n**What was done:**\n- Created `apps/api/fly.toml` — Fly.io app config with internal port 8080, auto-stop machines, min 0 running, health check at `/health`, Tokyo (nrt) region\n- Replaced `.github/workflows/deploy-api.yml` — removed GCP OIDC auth, Artifact Registry, and Cloud Run deploy; replaced with `superfly/flyctl-actions` using `FLY_API_TOKEN` secret\n\n**Files changed:**\n- `apps/api/fly.toml` (new)\n- `.github/workflows/deploy-api.yml` (rewritten)\n\n**Key decisions:**\n- Region set to `nrt` (Tokyo) — closest to target users; can be changed via `fly.toml`\n- VM sized at `shared-cpu-1x` / 512MB — suitable for a FastAPI app with min 0 machines\n- Dockerfile unchanged as required — Fly.io builds remotely via `--remote-only`\n- Secrets (DATABASE_URL, REDIS_URL, SUPABASE_JWT_SECRET, SUPABASE_URL, SUPABASE_SERVICE_KEY) must be set via `flyctl secrets set` before first deploy"
+}
