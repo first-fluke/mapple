@@ -1,13 +1,3 @@
-output "api_url" {
-  description = "API Cloud Run service URL"
-  value       = module.cloud_run_api.service_url
-}
-
-output "web_url" {
-  description = "Web Cloud Run service URL"
-  value       = module.cloud_run_web.service_url
-}
-
 output "cloud_sql_instance" {
   description = "Cloud SQL instance connection name"
   value       = module.cloud_sql.instance_connection_name

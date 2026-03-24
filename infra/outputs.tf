@@ -1,8 +1,3 @@
-output "api_url" {
-  description = "URL of the Cloud Run API service"
-  value       = google_cloud_run_v2_service.api.uri
-}
-
 output "workload_identity_provider" {
   description = "Full resource name of the Workload Identity Pool Provider"
   value       = google_iam_workload_identity_pool_provider.github.name

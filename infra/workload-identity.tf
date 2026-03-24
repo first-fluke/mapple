@@ -39,12 +39,6 @@ resource "google_service_account_iam_member" "github_actions_workload_identity" 
 
 # IAM roles for the GitHub Actions service account
 
-resource "google_project_iam_member" "github_actions_run_admin" {
-  project = var.project_id
-  role    = "roles/run.admin"
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
-}
-
 resource "google_project_iam_member" "github_actions_artifact_registry_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"

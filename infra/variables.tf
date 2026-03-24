@@ -19,13 +19,3 @@ variable "github_repo" {
   type        = string
 }
 
-variable "api_image" {
-  description = "Full API container image URI including tag"
-  type        = string
-}
-
-variable "api_env" {
-  description = "Environment variables for API Cloud Run service"
-  type        = map(string)
-  default     = {}
-}

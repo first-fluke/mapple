@@ -72,43 +72,6 @@ variable "redis_memory_size_gb" {
   default     = 1
 }
 
-# Cloud Run
-variable "api_image" {
-  description = "Container image URI for the API service"
-  type        = string
-  default     = "gcr.io/cloudrun/hello"
-}
-
-variable "web_image" {
-  description = "Container image URI for the Web service"
-  type        = string
-  default     = "gcr.io/cloudrun/hello"
-}
-
-variable "api_min_instances" {
-  description = "Minimum number of API instances"
-  type        = number
-  default     = 0
-}
-
-variable "api_max_instances" {
-  description = "Maximum number of API instances"
-  type        = number
-  default     = 2
-}
-
-variable "web_min_instances" {
-  description = "Minimum number of Web instances"
-  type        = number
-  default     = 0
-}
-
-variable "web_max_instances" {
-  description = "Maximum number of Web instances"
-  type        = number
-  default     = 2
-}
-
 # Storage
 variable "cors_origins" {
   description = "Allowed CORS origins for storage buckets"
