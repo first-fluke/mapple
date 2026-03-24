@@ -1,166 +1,142 @@
 import datetime
 
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.contact_relationships.service import ContactRelationshipService
-from src.contacts.models import Contact
 from src.lib.exceptions import NotFoundException
-from src.meetings.models import Meeting, MeetingParticipant
+from src.meetings.models import Meeting
 from src.meetings.repository import MeetingRepository
-from src.meetings.schemas import MeetingOut, ParticipantOut
 
 
 class MeetingService:
-    def __init__(self, session: AsyncSession, redis: Redis) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.repo = MeetingRepository(session)
-        self.relationship_service = ContactRelationshipService(session, redis)
 
-    async def _ensure_contacts_exist(self, contact_ids: list[int]) -> None:
-        for contact_id in contact_ids:
-            contact = await self.session.get(Contact, contact_id)
-            if not contact:
-                raise NotFoundException(message=f"Contact {contact_id} not found")
-
-    async def _build_meeting_out(self, meeting: Meeting, participants: list[MeetingParticipant]) -> MeetingOut:
-        return MeetingOut(
-            id=meeting.id,
-            user_id=meeting.user_id,
-            title=meeting.title,
-            scheduled_at=meeting.scheduled_at,
-            location=meeting.location,
-            notes=meeting.notes,
-            participants=[ParticipantOut.model_validate(p) for p in participants],
-            created_at=meeting.created_at,
-            updated_at=meeting.updated_at,
-        )
-
-    async def list_by_user(self, user_id: int) -> list[MeetingOut]:
-        meetings = await self.repo.find_by_user(user_id)
-        result = []
-        for meeting in meetings:
-            participants = await self.repo.get_participants(meeting.id)
-            result.append(await self._build_meeting_out(meeting, participants))
-        return result
-
-    async def get(self, *, user_id: int, meeting_id: int) -> MeetingOut:
-        meeting = await self.repo.find_by_id(meeting_id, user_id)
-        if not meeting:
-            raise NotFoundException(message=f"Meeting {meeting_id} not found")
-        participants = await self.repo.get_participants(meeting.id)
-        return await self._build_meeting_out(meeting, participants)
-from __future__ import annotations
-from src.meetings.models import Meeting
-    def __init__(self, session: AsyncSession) -> None:
-    async def list(
+    async def list_meetings(
         self,
         *,
+        user_id: str,
         cursor: int | None = None,
         per_page: int = 20,
         date_from: datetime.datetime | None = None,
         date_to: datetime.datetime | None = None,
         contact_id: int | None = None,
-    ) -> tuple[list[Meeting], dict[int, list[int]], bool]:
-        meetings, has_more = await self.repo.list(
+    ) -> tuple[list[dict], bool]:
+        meetings, has_more = await self.repo.find_paginated(
+            user_id=user_id,
             cursor=cursor,
             per_page=per_page,
             date_from=date_from,
             date_to=date_to,
             contact_id=contact_id,
-        meeting_ids = [m.id for m in meetings]
-        attendees_map = await self.repo.get_attendee_contact_ids_bulk(meeting_ids) if meeting_ids else {}
-        return meetings, attendees_map, has_more
-    async def get(self, meeting_id: int) -> tuple[Meeting, list[int]]:
-        meeting = await self.repo.get(meeting_id)
-            raise NotFoundException("Meeting not found")
-        attendee_ids = await self.repo.get_attendee_contact_ids(meeting_id)
-        return meeting, attendee_ids
+        )
+        enriched = []
+        for m in meetings:
+            ids = await self.repo.get_attendee_contact_ids(m.id)
+            enriched.append(_meeting_with_attendees(m, ids))
+        return enriched, has_more
+
+    async def get_meeting(self, *, user_id: str, meeting_id: int) -> dict:
+        meeting = await self._find_or_raise(meeting_id, user_id)
+        ids = await self.repo.get_attendee_contact_ids(meeting.id)
+        return _meeting_with_attendees(meeting, ids)
 
     async def create(
         self,
         *,
-        user_id: int,
+        user_id: str,
         title: str,
-        scheduled_at: datetime.datetime,
+        description: str | None,
+        starts_at: datetime.datetime,
+        ends_at: datetime.datetime | None,
         location: str | None,
-        notes: str | None,
-        participant_ids: list[int],
-    ) -> MeetingOut:
-        await self._ensure_contacts_exist(participant_ids)
+        attendee_contact_ids: list[int],
+    ) -> dict:
         meeting = await self.repo.create(
             user_id=user_id,
             title=title,
-            scheduled_at=scheduled_at,
+            description=description,
+            starts_at=starts_at,
+            ends_at=ends_at,
             location=location,
-            notes=notes,
         )
-        participants = await self.repo.set_participants(meeting.id, participant_ids)
-        await self.relationship_service.recompute_strength_for_contacts(
-            user_id,
-            participant_ids,
-        )
-        return await self._build_meeting_out(meeting, participants)
+        if attendee_contact_ids:
+            await self.repo.set_attendees(meeting.id, attendee_contact_ids)
+        await self.session.commit()
+        await self.session.refresh(meeting)
+        ids = await self.repo.get_attendee_contact_ids(meeting.id)
+        return _meeting_with_attendees(meeting, ids)
 
     async def update(
         self,
         *,
-        user_id: int,
+        user_id: str,
         meeting_id: int,
         title: str | None = None,
-        scheduled_at: datetime.datetime | None = None,
+        description: str | None = None,
+        starts_at: datetime.datetime | None = None,
+        ends_at: datetime.datetime | None = None,
         location: str | None = None,
-        notes: str | None = None,
-        participant_ids: list[int] | None = None,
-    ) -> MeetingOut:
-        meeting = await self.repo.find_by_id(meeting_id, user_id)
-        if not meeting:
-            raise NotFoundException(message=f"Meeting {meeting_id} not found")
-
-        old_contact_ids = await self.repo.get_participant_contact_ids(meeting.id)
-
+        attendee_contact_ids: list[int] | None = None,
+    ) -> dict:
+        meeting = await self._find_or_raise(meeting_id, user_id)
         meeting = await self.repo.update(
             meeting,
             title=title,
-            scheduled_at=scheduled_at,
+            description=description,
+            starts_at=starts_at,
+            ends_at=ends_at,
             location=location,
-            notes=notes,
         )
+        if attendee_contact_ids is not None:
+            await self.repo.set_attendees(meeting.id, attendee_contact_ids)
+        await self.session.commit()
+        await self.session.refresh(meeting)
+        ids = await self.repo.get_attendee_contact_ids(meeting.id)
+        return _meeting_with_attendees(meeting, ids)
 
-        if participant_ids is not None:
-            await self._ensure_contacts_exist(participant_ids)
-            participants = await self.repo.set_participants(meeting.id, participant_ids)
-            all_affected = list(set(old_contact_ids) | set(participant_ids))
-            await self.relationship_service.recompute_strength_for_contacts(
-                user_id,
-                all_affected,
-            )
-        else:
-            participants = await self.repo.get_participants(meeting.id)
+    async def delete(self, *, user_id: str, meeting_id: int) -> None:
+        meeting = await self._find_or_raise(meeting_id, user_id)
+        await self.repo.delete(meeting)
+        await self.session.commit()
 
-        return await self._build_meeting_out(meeting, participants)
+    async def list_by_contact(
+        self,
+        *,
+        user_id: str,
+        contact_id: int,
+        cursor: int | None = None,
+        per_page: int = 20,
+    ) -> tuple[list[dict], bool]:
+        meetings, has_more = await self.repo.find_by_contact(
+            user_id=user_id,
+            contact_id=contact_id,
+            cursor=cursor,
+            per_page=per_page,
+        )
+        enriched = []
+        for m in meetings:
+            ids = await self.repo.get_attendee_contact_ids(m.id)
+            enriched.append(_meeting_with_attendees(m, ids))
+        return enriched, has_more
 
-    async def delete(self, *, user_id: int, meeting_id: int) -> None:
+    async def _find_or_raise(self, meeting_id: int, user_id: str) -> Meeting:
         meeting = await self.repo.find_by_id(meeting_id, user_id)
         if not meeting:
             raise NotFoundException(message=f"Meeting {meeting_id} not found")
+        return meeting
 
-        contact_ids = await self.repo.get_participant_contact_ids(meeting.id)
-        await self.repo.delete(meeting)
-        await self.relationship_service.recompute_strength_for_contacts(
-            user_id,
-            contact_ids,
-        )
-        description: str | None,
-        start_time: datetime.datetime,
-        end_time: datetime.datetime,
-        attendee_contact_ids: list[int],
-    ) -> tuple[Meeting, list[int]]:
-            description=description,
-            start_time=start_time,
-            end_time=end_time,
-            attendee_contact_ids=attendee_contact_ids,
-        return meeting, attendee_contact_ids
-        meeting = await self.repo.get(meeting_id)
-            raise NotFoundException("Meeting not found")
-    async def delete(self, meeting_id: int) -> None:
+
+def _meeting_with_attendees(meeting: Meeting, contact_ids: list[int]) -> dict:
+    return {
+        "id": meeting.id,
+        "user_id": meeting.user_id,
+        "title": meeting.title,
+        "description": meeting.description,
+        "starts_at": meeting.starts_at,
+        "ends_at": meeting.ends_at,
+        "location": meeting.location,
+        "attendee_contact_ids": contact_ids,
+        "created_at": meeting.created_at,
+        "updated_at": meeting.updated_at,
+    }
