@@ -1,5 +1,11 @@
 import { atom } from 'jotai';
-import type { User } from '@/lib/auth';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  image: string | null;
+}
 
 export const userAtom = atom<User | null>(null);
 export const authLoadingAtom = atom(true);

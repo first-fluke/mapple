@@ -61,6 +61,16 @@ docker compose ps
 | MinIO API  | http://localhost:9000  |
 | MinIO Console | http://localhost:9001 |
 
+## Environment Variables
+
+### Web (`apps/web`)
+
+| Variable | Description | Required |
+| --- | --- | --- |
+| `API_URL` | Backend API URL for proxy rewrites | Yes |
+| `BETTER_AUTH_SECRET` | Secret key for better-auth session signing (min 32 chars) | Yes |
+| `BETTER_AUTH_URL` | Base URL of the web app for better-auth | Yes |
+
 ## Conventions
 
 - **Commits**: Conventional Commits format — `type(scope): description`
