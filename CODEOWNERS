@@ -8,21 +8,20 @@
 # Default owner for everything in the repo
 * @gracefullight
 
-# Frontend
-/src/app/ @gracefullight
-/src/components/ @gracefullight
-/src/hooks/ @gracefullight
-/src/styles/ @gracefullight
+# Web Frontend
+/apps/web/ @gracefullight
 
-# Backend
-/src/api/ @gracefullight
-/src/services/ @gracefullight
-/src/lib/ @gracefullight
+# Backend API
+/apps/api/ @gracefullight
 
-# Data
-/src/db/ @gracefullight
-/prisma/ @gracefullight
-/migrations/ @gracefullight
+# Mobile
+/apps/mobile/ @gracefullight
+
+# Shared Packages
+/packages/ @gracefullight
+
+# Infrastructure
+/infra/ @gracefullight
 
 # CI/CD
 /.github/ @gracefullight

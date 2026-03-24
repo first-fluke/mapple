@@ -11,8 +11,6 @@ globe-crm/
 │   ├── web/           # Web frontend (React)
 │   └── mobile/        # Mobile app (Flutter)
 ├── packages/          # Shared libraries
-│   ├── db/            # Database schema & migrations
-│   ├── config/        # Shared configuration
 │   └── types/         # Shared type definitions
 ├── infra/             # Infrastructure as Code (Terraform)
 ├── docker-compose.yml # Local development services
