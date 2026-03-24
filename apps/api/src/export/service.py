@@ -14,7 +14,7 @@ class ExportService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def export_contacts_csv(self, user_id: int) -> str:
+    async def export_contacts_csv(self, user_id: str) -> str:
         org = aliased(Organization)
 
         stmt = (

@@ -14,7 +14,7 @@ class ContactRelationshipService:
         self.session = session
         self.redis = redis
 
-    async def recompute_strength_for_contacts(self, user_id: int, contact_ids: list[int]) -> None:
+    async def recompute_strength_for_contacts(self, user_id: str, contact_ids: list[int]) -> None:
         """Recompute relationship strength for all pairs among the given contacts."""
         if len(contact_ids) < 2:
             return
@@ -46,7 +46,7 @@ class ContactRelationshipService:
         result = await self.session.execute(stmt)
         return result.scalar_one()
 
-    async def _upsert_relationship(self, user_id: int, contact_id_1: int, contact_id_2: int, strength: float) -> None:
+    async def _upsert_relationship(self, user_id: str, contact_id_1: int, contact_id_2: int, strength: float) -> None:
         """Insert or update a contact relationship."""
         stmt = (
             insert(ContactRelationship)
@@ -63,7 +63,7 @@ class ContactRelationshipService:
         )
         await self.session.execute(stmt)
 
-    async def _delete_relationship(self, user_id: int, contact_id_1: int, contact_id_2: int) -> None:
+    async def _delete_relationship(self, user_id: str, contact_id_1: int, contact_id_2: int) -> None:
         """Delete a contact relationship (strength became 0)."""
         stmt = delete(ContactRelationship).where(
             ContactRelationship.user_id == user_id,
@@ -72,6 +72,6 @@ class ContactRelationshipService:
         )
         await self.session.execute(stmt)
 
-    async def _invalidate_globe_cache(self, user_id: int) -> None:
+    async def _invalidate_globe_cache(self, user_id: str) -> None:
         """Invalidate globe arc cache for the user."""
         await self.redis.delete(f"globe:user:{user_id}:arcs")

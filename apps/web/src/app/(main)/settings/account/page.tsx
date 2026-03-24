@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api/client';
+import { authClient } from '@/lib/auth-client';
 
 export default function AccountPage() {
   const [confirmText, setConfirmText] = useState('');
@@ -28,9 +29,8 @@ export default function AccountPage() {
     mutationFn: async () => {
       await api.delete('/auth/me');
     },
-    onSuccess: () => {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+    onSuccess: async () => {
+      await authClient.signOut();
       window.location.href = '/login';
     },
   });

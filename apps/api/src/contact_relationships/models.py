@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import CheckConstraint, Float, ForeignKey, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, Float, ForeignKey, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.lib.database import Base
@@ -20,7 +20,7 @@ class ContactRelationship(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user_auth.id", ondelete="CASCADE"))
+    user_id: Mapped[str] = mapped_column(Text, ForeignKey("user.id", ondelete="CASCADE"))
     contact_id_1: Mapped[int] = mapped_column(ForeignKey("contact.id", ondelete="CASCADE"))
     contact_id_2: Mapped[int] = mapped_column(ForeignKey("contact.id", ondelete="CASCADE"))
     strength: Mapped[float] = mapped_column(Float)

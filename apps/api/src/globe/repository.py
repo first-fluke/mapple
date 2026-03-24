@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,7 +14,7 @@ class GlobeRepository:
         stmt = (
             select(Contact)
             .where(
-                Contact.user_id == uuid.UUID(user_id),
+                Contact.user_id == user_id,
                 Contact.latitude.is_not(None),
                 Contact.longitude.is_not(None),
             )

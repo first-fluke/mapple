@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.lib.database import Base
@@ -13,7 +13,7 @@ class Tag(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user_auth.id", ondelete="CASCADE"))
+    user_id: Mapped[str] = mapped_column(Text, ForeignKey("user.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(100))
     color: Mapped[str] = mapped_column(String(7), server_default="'#6366f1'")
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())

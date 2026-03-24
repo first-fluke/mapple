@@ -1,9 +1,0 @@
-{
-  "id": "5c05bb6f-3077-48a5-822d-1e7590023961",
-  "issueId": "b681456c-b866-4473-89d8-739665e72876",
-  "workspacePath": "/Users/gracefullight/workspace/mapple/FIR-81",
-  "startedAt": "2026-03-24T03:43:44.377Z",
-  "finishedAt": "2026-03-24T03:50:17.381Z",
-  "exitCode": 0,
-  "agentOutput": "Done. Here's the work summary:\n\n## Work Summary\n\n**What was done:**\n- Consolidated 12 duplicate Alembic migration files (with multiple heads at steps 0001, 0003, 0004) into 5 clean migrations forming a single linear chain: `0001 → 0002 → 0003 → 0004 → 0005`\n- Fixed 3 corrupted model files (`contacts/models.py`, `tags/models.py`, `meetings/models.py`) that had conflicting class definitions concatenated from different design iterations\n- Cleaned up `alembic/env.py` to use explicit imports for all models\n\n**Files changed:**\n- `apps/api/alembic/versions/` — deleted 10 duplicate files, kept/rewrote 5 consolidated migrations\n- `apps/api/alembic/env.py` — cleaned up model imports\n- `apps/api/src/contacts/models.py` — removed duplicate column definitions, standardized to `user_auth` FK\n- `apps/api/src/tags/models.py` — removed duplicate class definitions\n- `apps/api/src/meetings/models.py` — removed duplicate `MeetingParticipant`, kept `MeetingAttendee`\n\n**Key decisions:**\n- Used `user_auth`-based design (not old `users` FK design) as the canonical schema, matching what `env.py` imports\n- Merged all contact location fields (geometry, lat/lng, country, city, avatar_url) into the `contact` table creation in migration 0003 instead of separate add-column migrations\n- Dropped `contact_relationship` and `meeting_participant` tables (no corresponding models)\n- Kept `users` table since `User` model exists and is registered in `env.py`"
-}

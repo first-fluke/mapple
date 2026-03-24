@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import Database from 'better-sqlite3';
@@ -12,3 +13,6 @@ export const auth = betterAuth({
   },
   plugins: [nextCookies()],
 });
+=======
+export { authClient } from './auth-client';
+>>>>>>> 2c83c4e (feat(web,api): integrate better-auth for authentication)

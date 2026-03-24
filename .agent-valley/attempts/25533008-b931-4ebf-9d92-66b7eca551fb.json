@@ -1,9 +1,0 @@
-{
-  "id": "25533008-b931-4ebf-9d92-66b7eca551fb",
-  "issueId": "f62135e6-c816-417f-9dee-b8e638371b13",
-  "workspacePath": "/Users/gracefullight/workspace/mapple/FIR-82",
-  "startedAt": "2026-03-24T03:43:45.865Z",
-  "finishedAt": "2026-03-24T03:47:20.007Z",
-  "exitCode": 0,
-  "agentOutput": "## Work Summary\n\n**What was done:**\n- **Created root `.gitignore`** — the repo had none, causing OS files and agent state to be tracked. Added patterns for `.DS_Store`, `.omc/`, `.agent-valley/dag-cache.json`, `.symphony/dag-cache.json`, and `/FIR-*` worktree directories\n- **Unstaged 5 stale files** from main worktree index: `.DS_Store`, `.agent-valley/dag-cache.json`, `.omc/state/hud-state.json`, `.omc/state/hud-stdin-cache.json`, `.symphony/dag-cache.json`\n- **Removed 7 ghost submodule entries** from main worktree index: `FIR-67`, `FIR-77`, `FIR-78`, `FIR-80`, `FIR-81`, `FIR-82`, `FIR-84` (worktree directories were falsely tracked as submodules with mode 160000)\n- **FIR-69**: No ghost entry found in index — already clean\n- **FIR-67 worktree retained**: `symphony/FIR-67` has 174 files / 14k+ insertions not yet in main; not safe to remove\n\n**Files changed:**\n- `.gitignore` (new) — root-level gitignore\n\n**Key decisions:**\n- Left FIR-67 worktree intact since its work is unmerged\n- Used `git update-index --force-remove` for submodule entries since `git rm --cached` doesn't handle mode-160000 entries\n- Scoped `/FIR-*` pattern in gitignore to prevent future worktree directories from being staged"
-}

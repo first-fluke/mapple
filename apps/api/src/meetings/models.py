@@ -10,8 +10,8 @@ class Meeting(Base):
     __tablename__ = "meeting"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("user_auth.id", ondelete="CASCADE"),
+    user_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("user.id", ondelete="CASCADE"),
     )
     title: Mapped[str] = mapped_column(String(255))
     scheduled_at: Mapped[datetime.datetime] = mapped_column()

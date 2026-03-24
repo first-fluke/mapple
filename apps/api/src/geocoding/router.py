@@ -11,7 +11,7 @@ router = APIRouter(prefix="/geocoding", tags=["geocoding"])
 async def reverse_geocode(
     lat: float = Query(...),
     lng: float = Query(...),
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
 ) -> ApiResponse[dict]:
     """Reverse geocode coordinates to country and city using Nominatim."""
     async with httpx.AsyncClient() as client:

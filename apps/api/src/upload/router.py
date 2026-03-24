@@ -14,9 +14,9 @@ AVATAR_RATE_WINDOW = 60
 
 
 async def check_avatar_rate_limit(
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     redis: Redis = Depends(get_redis),
-) -> int:
+) -> str:
     key = f"rate:upload:avatar:{user_id}"
 
     count = await redis.incr(key)
@@ -36,7 +36,7 @@ async def check_avatar_rate_limit(
 @router.post("/avatar", status_code=201)
 async def create_avatar_upload_url(
     body: AvatarUploadRequest,
-    user_id: int = Depends(check_avatar_rate_limit),
+    user_id: str = Depends(check_avatar_rate_limit),
 ) -> ApiResponse[PresignedUrlOut]:
     """Generate a presigned URL for avatar upload (5MB max, image/* only)."""
     service = UploadService()

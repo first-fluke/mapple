@@ -15,7 +15,7 @@ router = APIRouter(prefix="/graph", tags=["graph"])
 @router.get("/edges")
 async def list_edges(
     type: EdgeType = Query(..., description="Edge type filter"),
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
     redis: Redis = Depends(get_redis),
 ) -> ApiResponse[list[EdgeOut]]:
@@ -28,7 +28,7 @@ async def list_edges(
 @router.get("/clusters")
 async def list_clusters(
     type: EdgeType = Query(..., description="Cluster type filter"),
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
     redis: Redis = Depends(get_redis),
 ) -> ApiResponse[list[ClusterOut]]:

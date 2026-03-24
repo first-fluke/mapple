@@ -19,7 +19,7 @@ router = APIRouter(prefix="/globe", tags=["globe"])
 async def get_globe_data(
     response: Response,
     bbox: str = Query(description="Bounding box: west,south,east,north"),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
     redis: Redis = Depends(get_redis),
     if_none_match: str | None = Header(default=None),

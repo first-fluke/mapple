@@ -13,7 +13,7 @@ router = APIRouter(prefix="/organizations", tags=["organizations"])
 @router.get("")
 async def search_organizations(
     q: str = Query(default="", max_length=255),
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[list[OrganizationOut]]:
     """Autocomplete search for organizations by name (ILIKE, top 10)."""
@@ -25,7 +25,7 @@ async def search_organizations(
 @router.post("", status_code=201)
 async def create_organization(
     body: OrganizationCreate,
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[OrganizationOut]:
     """Create an organization with name+type dedup."""

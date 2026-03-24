@@ -11,7 +11,7 @@ router = APIRouter(prefix="/export", tags=["export"])
 
 @router.get("/contacts")
 async def export_contacts(
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> StreamingResponse:
     """Export contacts with experiences as CSV."""

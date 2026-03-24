@@ -1,5 +1,4 @@
 import datetime
-import uuid
 
 from sqlalchemy import delete, select
 from sqlalchemy import func as sa_func
@@ -27,8 +26,7 @@ class ContactRepository:
         city: str | None = None,
         sort: str = "created_at_desc",
     ) -> tuple[list[Contact], bool]:
-        uid = uuid.UUID(user_id)
-        stmt = select(Contact).where(Contact.user_id == uid, self._not_deleted())
+        stmt = select(Contact).where(Contact.user_id == user_id, self._not_deleted())
         if q:
             stmt = stmt.where(Contact.name.ilike(f"%{q}%"))
         if country:
@@ -73,7 +71,7 @@ class ContactRepository:
         stmt = (
             select(sa_func.count())
             .select_from(Contact)
-            .where(Contact.user_id == uuid.UUID(user_id), self._not_deleted())
+            .where(Contact.user_id == user_id, self._not_deleted())
         )
         if q:
             stmt = stmt.where(Contact.name.ilike(f"%{q}%"))
@@ -93,7 +91,7 @@ class ContactRepository:
     async def find_by_id(self, contact_id: int, user_id: str) -> Contact | None:
         stmt = select(Contact).where(
             Contact.id == contact_id,
-            Contact.user_id == uuid.UUID(user_id),
+            Contact.user_id == user_id,
             self._not_deleted(),
         )
         result = await self.session.execute(stmt)
@@ -111,7 +109,7 @@ class ContactRepository:
         tags: list[str] | None = None,
     ) -> Contact:
         contact = Contact(
-            user_id=uuid.UUID(user_id),
+            user_id=user_id,
             name=name,
             email=email,
             phone=phone,

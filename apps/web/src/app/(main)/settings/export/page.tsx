@@ -5,19 +5,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-
 export default function ExportPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/export/contacts`, {
-        headers: {
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-      });
+      const response = await fetch('/api/proxy/export/contacts');
 
       if (!response.ok) {
         throw new Error('Export failed');
@@ -61,9 +55,4 @@ export default function ExportPage() {
       </CardContent>
     </Card>
   );
-}
-
-function getAccessToken(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem('access_token') ?? '';
 }

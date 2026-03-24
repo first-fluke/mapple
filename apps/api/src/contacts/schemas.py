@@ -38,7 +38,7 @@ class ContactPatch(BaseModel):
 
 class ContactOut(BaseModel):
     id: int
-    user_id: int
+    user_id: str
     name: str
     email: str | None
     phone: str | None

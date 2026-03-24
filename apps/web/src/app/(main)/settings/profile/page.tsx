@@ -1,36 +1,29 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api/client';
 
-interface User {
-  id: number;
-  provider: string;
+interface UserProfile {
+  id: string;
   email: string;
-  name: string | null;
-  avatar_url: string | null;
+  name: string;
+  image: string | null;
 }
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['me'],
-    queryFn: async () => {
-      const res = await api.get<User>('/auth/me');
-      return res.data;
-    },
-  });
+  const { user, loading } = useAuth();
 
   const mutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await api.patch<User>('/auth/me', { name });
+      const res = await api.patch<UserProfile>('/auth/me', { name });
       return res.data;
     },
     onSuccess: () => {
@@ -47,7 +40,7 @@ export default function ProfilePage() {
     },
   });
 
-  if (isLoading) {
+  if (loading) {
     return <ProfileSkeleton />;
   }
 
@@ -60,7 +53,7 @@ export default function ProfilePage() {
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={user?.avatar_url ?? undefined} alt={user?.name ?? 'User'} />
+            <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? 'User'} />
             <AvatarFallback className="text-lg">{user?.name?.charAt(0)?.toUpperCase() ?? 'U'}</AvatarFallback>
           </Avatar>
           <div>
@@ -79,7 +72,7 @@ export default function ProfilePage() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={user?.email ?? ''} disabled />
-            <p className="text-xs text-muted-foreground">Email is managed by your {user?.provider} account.</p>
+            <p className="text-xs text-muted-foreground">Email is managed by your social account.</p>
           </div>
 
           <form.Field name="name">

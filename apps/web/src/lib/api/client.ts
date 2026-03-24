@@ -11,9 +11,13 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API_BASE_URL = '/api/proxy';
 
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  if (response.status === 401) {
+    window.location.href = '/login';
+    throw new ApiError(401, 'UNAUTHORIZED');
+  }
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as ErrorResponse | null;
     throw new ApiError(response.status, body?.error?.code ?? 'UNKNOWN_ERROR', body?.error?.details);

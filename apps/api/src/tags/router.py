@@ -12,7 +12,7 @@ router = APIRouter(prefix="/tags", tags=["tags"])
 
 @router.get("")
 async def list_tags(
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[list[TagOut]]:
     """List all tags for the current user."""
@@ -24,7 +24,7 @@ async def list_tags(
 @router.post("", status_code=201)
 async def create_tag(
     body: TagCreate,
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[TagOut]:
     """Create a new tag."""
@@ -37,7 +37,7 @@ async def create_tag(
 async def update_tag(
     tag_id: int,
     body: TagUpdate,
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[TagOut]:
     """Update a tag."""
@@ -49,7 +49,7 @@ async def update_tag(
 @router.delete("/{tag_id}", status_code=204)
 async def delete_tag(
     tag_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> None:
     """Delete a tag."""

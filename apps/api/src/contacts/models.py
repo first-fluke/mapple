@@ -1,7 +1,6 @@
 import datetime
-import uuid
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Uuid, func
+from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.lib.database import Base
@@ -20,7 +19,7 @@ class Contact(Base):
     __tablename__ = "contact"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("user_auth.id", ondelete="CASCADE"))
+    user_id: Mapped[str] = mapped_column(Text, ForeignKey("user.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str | None] = mapped_column(String(255))
     phone: Mapped[str | None] = mapped_column(String(50))

@@ -13,7 +13,7 @@ class UploadService:
         if not await storage.bucket_exists(AVATAR_BUCKET):
             await storage.make_bucket(AVATAR_BUCKET)
 
-    async def create_avatar_presigned_url(self, user_id: int, content_type: str) -> tuple[str, str, int]:
+    async def create_avatar_presigned_url(self, user_id: str, content_type: str) -> tuple[str, str, int]:
         await self._ensure_bucket()
 
         ext = content_type.split("/")[-1]

@@ -8,7 +8,7 @@ class TagRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def find_by_user(self, user_id: int) -> list[Tag]:
+    async def find_by_user(self, user_id: str) -> list[Tag]:
         stmt = (
             select(Tag)
             .where(Tag.user_id == user_id)
@@ -17,7 +17,7 @@ class TagRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def find_by_id(self, tag_id: int, user_id: int) -> Tag | None:
+    async def find_by_id(self, tag_id: int, user_id: str) -> Tag | None:
         stmt = select(Tag).where(
             Tag.id == tag_id,
             Tag.user_id == user_id,
@@ -28,7 +28,7 @@ class TagRepository:
     async def create(
         self,
         *,
-        user_id: int,
+        user_id: str,
         name: str,
         color: str,
     ) -> Tag:

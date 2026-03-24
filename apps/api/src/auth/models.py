@@ -1,25 +1,24 @@
 import datetime
 
-from sqlalchemy import String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.lib.database import Base
 
 
-class UserAuth(Base):
-    __tablename__ = "user_auth"
-    __table_args__ = (
-        UniqueConstraint("provider", "provider_id", name="uq_user_auth_provider"),
-    )
+class User(Base):
+    __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    provider: Mapped[str] = mapped_column(String(20))
-    provider_id: Mapped[str] = mapped_column(String(255))
-    email: Mapped[str] = mapped_column(String(255))
-    name: Mapped[str | None] = mapped_column(String(255))
-    avatar_url: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    name: Mapped[str] = mapped_column(Text)
+    email: Mapped[str] = mapped_column(Text, unique=True)
+    email_verified: Mapped[bool] = mapped_column(
+        "emailVerified", Boolean, server_default="false"
+    )
+    image: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        "createdAt", server_default=func.now()
+    )
     updated_at: Mapped[datetime.datetime] = mapped_column(
-        server_default=func.now(),
-        onupdate=func.now(),
+        "updatedAt", server_default=func.now()
     )

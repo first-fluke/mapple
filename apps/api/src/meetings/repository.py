@@ -1,5 +1,4 @@
 import datetime
-import uuid
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,8 +20,7 @@ class MeetingRepository:
         date_to: datetime.datetime | None = None,
         contact_id: int | None = None,
     ) -> tuple[list[Meeting], bool]:
-        uid = uuid.UUID(user_id)
-        stmt = select(Meeting).where(Meeting.user_id == uid)
+        stmt = select(Meeting).where(Meeting.user_id == user_id)
         if date_from:
             stmt = stmt.where(Meeting.starts_at >= date_from)
         if date_to:
@@ -47,7 +45,7 @@ class MeetingRepository:
         return items, has_more
 
     async def find_by_id(self, meeting_id: int, user_id: str) -> Meeting | None:
-        stmt = select(Meeting).where(Meeting.id == meeting_id, Meeting.user_id == uuid.UUID(user_id))
+        stmt = select(Meeting).where(Meeting.id == meeting_id, Meeting.user_id == user_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -62,7 +60,7 @@ class MeetingRepository:
         location: str | None,
     ) -> Meeting:
         meeting = Meeting(
-            user_id=uuid.UUID(user_id),
+            user_id=user_id,
             title=title,
             description=description,
             starts_at=starts_at,
@@ -130,7 +128,7 @@ class MeetingRepository:
         stmt = (
             select(Meeting)
             .where(
-                Meeting.user_id == uuid.UUID(user_id),
+                Meeting.user_id == user_id,
                 Meeting.id.in_(
                     select(MeetingAttendee.meeting_id).where(
                         MeetingAttendee.contact_id == contact_id

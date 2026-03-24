@@ -13,7 +13,7 @@ router = APIRouter(prefix="/contacts/{contact_id}/experiences", tags=["experienc
 @router.get("")
 async def list_experiences(
     contact_id: int,
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[list[ExperienceOut]]:
     """List all experiences for a contact."""
@@ -28,7 +28,7 @@ async def list_experiences(
 async def create_experience(
     contact_id: int,
     body: ExperienceCreate,
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[ExperienceOut]:
     """Create a new experience for a contact."""
@@ -47,7 +47,7 @@ async def update_experience(
     contact_id: int,
     experience_id: int,
     body: ExperienceUpdate,
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[ExperienceOut]:
     """Update an experience."""
@@ -66,7 +66,7 @@ async def update_experience(
 async def delete_experience(
     contact_id: int,
     experience_id: int,
-    _user_id: int = Depends(get_current_user_id),
+    _user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> None:
     """Delete an experience."""

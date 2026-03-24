@@ -1,5 +1,4 @@
 import datetime
-import uuid
 
 from pydantic import BaseModel, Field
 
@@ -24,7 +23,7 @@ class MeetingUpdate(BaseModel):
 
 class MeetingOut(BaseModel):
     id: int
-    user_id: uuid.UUID
+    user_id: str
     title: str
     description: str | None
     starts_at: datetime.datetime
