@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
-from src.tags.schemas import TagCreate, TagOut
 from src.tags.schemas import TagCreate, TagOut, TagUpdate
 from src.tags.service import TagService
 
@@ -18,7 +17,6 @@ async def list_tags(
 ) -> ApiResponse[list[TagOut]]:
     """List all tags for the current user."""
     service = TagService(session)
-    tags = await service.list_by_user(user_id)
     tags = await service.list_tags(user_id)
     return ApiResponse(data=[TagOut.model_validate(t) for t in tags])
 
@@ -29,12 +27,11 @@ async def create_tag(
     user_id: int = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[TagOut]:
-    """Create a tag (idempotent — returns existing if name matches)."""
-    service = TagService(session)
-    tag = await service.create(user_id=user_id, name=body.name)
     """Create a new tag."""
+    service = TagService(session)
     tag = await service.create_tag(user_id, body)
     return ApiResponse(data=TagOut.model_validate(tag))
+
 
 @router.patch("/{tag_id}")
 async def update_tag(
@@ -44,6 +41,7 @@ async def update_tag(
     session: AsyncSession = Depends(get_session),
 ) -> ApiResponse[TagOut]:
     """Update a tag."""
+    service = TagService(session)
     tag = await service.update_tag(user_id, tag_id, body)
     return ApiResponse(data=TagOut.model_validate(tag))
 
@@ -56,5 +54,4 @@ async def delete_tag(
 ) -> None:
     """Delete a tag."""
     service = TagService(session)
-    await service.delete(tag_id=tag_id, user_id=user_id)
     await service.delete_tag(user_id, tag_id)

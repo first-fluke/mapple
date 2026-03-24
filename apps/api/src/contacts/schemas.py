@@ -3,8 +3,6 @@ import datetime
 from pydantic import BaseModel, Field
 
 
-from pydantic import BaseModel
-from datetime import datetime
 class ContactCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     email: str | None = Field(default=None, max_length=255)
@@ -31,13 +29,8 @@ class ContactUpdate(BaseModel):
     longitude: float | None = None
     country: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=255)
-class TagOut(BaseModel):
-    id: int
-    name: str
-    model_config = {"from_attributes": True}
-    name: str = Field(max_length=255)
-    city: str | None = Field(default=None, max_length=100)
-    notes: str | None = None
+
+
 class ContactPatch(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     tag_ids: list[int] | None = None
@@ -75,10 +68,8 @@ class ExperienceOut(BaseModel):
     major: str | None
 
     model_config = {"from_attributes": True}
-    notes: str | None
-    tags: list[TagOut]
-    created_at: datetime
-    updated_at: datetime
+
+
 class ContactListFilter(BaseModel):
     tag: str | None = None
     country: str | None = None
