@@ -43,14 +43,12 @@ export function ProfileCard({ pin, open, onOpenChange }: ProfileCardProps) {
           </DrawerHeader>
           <Separator />
           <div className="flex gap-2 p-4">
-            <Button variant="outline" className="flex-1" asChild>
-              <Link href={`/contacts/${pin.id}`}>Details</Link>
+            <Button variant="outline" className="flex-1" render={<Link href={`/contacts/${pin.id}`} />}>
+              Details
             </Button>
-            <Button variant="outline" className="flex-1" asChild>
-              <Link href={`/graph?focus=${pin.id}`}>
-                <Network className="mr-1 h-4 w-4" />
-                Connections
-              </Link>
+            <Button variant="outline" className="flex-1" render={<Link href={`/graph?focus=${pin.id}`} />}>
+              <Network className="mr-1 h-4 w-4" />
+              Connections
             </Button>
           </div>
         </div>

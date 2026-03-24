@@ -182,10 +182,10 @@ export default function TagsPage() {
 function ColorPicker({ color, onChange }: { color: string; onChange: (color: string) => void }) {
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button type="button" variant="outline" className="h-9 w-9 p-0" aria-label="Pick color">
-          <span className="h-5 w-5 rounded-sm" style={{ backgroundColor: color }} />
-        </Button>
+      <PopoverTrigger
+        render={<Button type="button" variant="outline" className="h-9 w-9 p-0" aria-label="Pick color" />}
+      >
+        <span className="h-5 w-5 rounded-sm" style={{ backgroundColor: color }} />
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3" align="end">
         <div className="grid grid-cols-4 gap-2">

@@ -52,11 +52,9 @@ export default function AccountPage() {
             </p>
           </div>
           <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Account
-              </Button>
+            <AlertDialogTrigger render={<Button variant="destructive" />}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Account
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
