@@ -1,0 +1,9 @@
+{
+  "id": "88eeeae8-0916-4fda-b647-cc175dbb1c71",
+  "issueId": "8a4841a5-b99b-4618-a82f-f7702da0c778",
+  "workspacePath": "/Users/gracefullight/workspace/mapple/FIR-83",
+  "startedAt": "2026-03-24T03:43:45.500Z",
+  "finishedAt": "2026-03-24T03:44:21.130Z",
+  "exitCode": 0,
+  "agentOutput": "Done. Here's the summary:\n\n## Work Summary\n\n- **AGENTS.md**: Removed references to non-existent `packages/db/` and `packages/config/` from the architecture tree diagram. Only `packages/types/` exists and is now the sole entry.\n- **CODEOWNERS**: Replaced old single-app paths (`/src/app/`, `/src/api/`, `/src/components/`, `/prisma/`, `/migrations/`, etc.) with monorepo paths (`/apps/web/`, `/apps/api/`, `/apps/mobile/`, `/packages/`, `/infra/`).\n\n**Files changed**: `AGENTS.md`, `CODEOWNERS`"
+}
