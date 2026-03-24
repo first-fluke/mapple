@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
         pathname: '/avatars/**',
       },
     ],
+  },
   experimental: {
     authInterrupts: true,
   },

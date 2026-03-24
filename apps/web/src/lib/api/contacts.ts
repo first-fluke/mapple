@@ -1,21 +1,22 @@
 import { api } from './client';
 
-export interface Contact {
-  id: number;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  avatar_url: string | null;
-  sns: ContactSns | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface ContactSns {
   linkedin?: string;
   twitter?: string;
   github?: string;
   instagram?: string;
+}
+
+export interface ContactTag {
+  id: number;
+  name: string;
+}
+
+export interface ContactExperience {
+  id: number;
+  organization_id: number;
+  role: string | null;
+  major: string | null;
 }
 
 export interface Organization {
@@ -52,7 +53,46 @@ export interface Tag {
   color: string | null;
 }
 
+export interface Contact {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  sns: ContactSns | null;
+  latitude: number | null;
+  longitude: number | null;
+  country: string | null;
+  city: string | null;
+  created_at: string;
+  updated_at: string;
+  tags: ContactTag[];
+  experiences: ContactExperience[];
+}
+
+export interface ContactCreateInput {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  country?: string | null;
+  city?: string | null;
+  tag_ids?: number[];
+  experiences?: {
+    organization_id: number;
+    role?: string | null;
+    major?: string | null;
+  }[];
+}
+
 export const contactsApi = {
+  list: () => api.get<Contact[]>('/contacts'),
+  get: (id: number) => api.get<Contact>(`/contacts/${id}`),
+  create: (data: ContactCreateInput) => api.post<Contact>('/contacts', data),
+  delete: (id: number) => api.delete<void>(`/contacts/${id}`),
+
   getContact(contactId: number) {
     return api.get<Contact>(`/contacts/${contactId}`);
   },
@@ -76,30 +116,4 @@ export const contactsApi = {
   removeTag(contactId: number, tagId: number) {
     return api.delete<void>(`/contacts/${contactId}/tags/${tagId}`);
   },
-export interface ContactTag {
-export interface ContactExperience {
-  user_id: number;
-  latitude: number | null;
-  longitude: number | null;
-  country: string | null;
-  city: string | null;
-  tags: ContactTag[];
-  experiences: ContactExperience[];
-export interface ContactCreateInput {
-  email?: string | null;
-  phone?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  country?: string | null;
-  city?: string | null;
-  tag_ids?: number[];
-  experiences?: {
-    organization_id: number;
-    role?: string | null;
-    major?: string | null;
-  }[];
-  list: () => api.get<Contact[]>('/contacts'),
-  get: (id: number) => api.get<Contact>(`/contacts/${id}`),
-  create: (data: ContactCreateInput) => api.post<Contact>('/contacts', data),
-  delete: (id: number) => api.delete<void>(`/contacts/${id}`),
 };
