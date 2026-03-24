@@ -10,6 +10,7 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from geoalchemy2 import Geometry
 
 revision: str = "0003"
 down_revision: Union[str, None] = "0002"
@@ -18,6 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
+
     op.create_table(
         "contact",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -25,6 +28,18 @@ def upgrade() -> None:
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("email", sa.String(255), nullable=True),
         sa.Column("phone", sa.String(50), nullable=True),
+        sa.Column(
+            "location",
+            Geometry(geometry_type="POINT", srid=4326, spatial_index=False),
+            nullable=True,
+        ),
+        sa.Column("latitude", sa.Float(), nullable=True),
+        sa.Column("longitude", sa.Float(), nullable=True),
+        sa.Column("country", sa.String(100), nullable=True),
+        sa.Column("city", sa.String(255), nullable=True),
+        sa.Column("avatar_url", sa.String(500), nullable=True),
+        sa.Column("organization_id", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.Text(), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(),
@@ -37,14 +52,33 @@ def upgrade() -> None:
             server_default=sa.func.now(),
             nullable=False,
         ),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["user_auth.id"],
             name="fk_contact_user_id",
             ondelete="CASCADE",
         ),
+        sa.ForeignKeyConstraint(
+            ["organization_id"],
+            ["organization.id"],
+            name="fk_contact_organization_id",
+            ondelete="SET NULL",
+        ),
     )
     op.create_index("ix_contact_user_id", "contact", ["user_id"])
+    op.create_index(
+        "ix_contact_not_deleted",
+        "contact",
+        ["user_id"],
+        postgresql_where=sa.text("deleted_at IS NULL"),
+    )
+    op.create_index(
+        "ix_contact_location",
+        "contact",
+        ["location"],
+        postgresql_using="gist",
+    )
 
     op.create_table(
         "experience",
@@ -79,12 +113,16 @@ def upgrade() -> None:
         ),
     )
     op.create_index("ix_experience_contact_id", "experience", ["contact_id"])
-    op.create_index("ix_experience_organization_id", "experience", ["organization_id"])
+    op.create_index(
+        "ix_experience_organization_id", "experience", ["organization_id"]
+    )
 
 
 def downgrade() -> None:
     op.drop_index("ix_experience_organization_id", table_name="experience")
     op.drop_index("ix_experience_contact_id", table_name="experience")
     op.drop_table("experience")
+    op.drop_index("ix_contact_location", table_name="contact")
+    op.drop_index("ix_contact_not_deleted", table_name="contact")
     op.drop_index("ix_contact_user_id", table_name="contact")
     op.drop_table("contact")

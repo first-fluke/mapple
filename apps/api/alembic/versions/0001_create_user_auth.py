@@ -1,4 +1,4 @@
-"""create user_auth table
+"""create user_auth and users tables
 
 Revision ID: 0001
 Revises:
@@ -41,6 +41,26 @@ def upgrade() -> None:
         sa.UniqueConstraint("provider", "provider_id", name="uq_user_auth_provider"),
     )
 
+    op.create_table(
+        "users",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("email", sa.String(255), nullable=False, unique=True),
+        sa.Column("name", sa.String(255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+    )
+
 
 def downgrade() -> None:
+    op.drop_table("users")
     op.drop_table("user_auth")
