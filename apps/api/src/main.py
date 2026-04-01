@@ -7,11 +7,10 @@ from fastapi.responses import JSONResponse
 from src.auth.router import router as auth_router
 from src.contacts.router import router as contacts_router
 from src.experiences.router import router as experiences_router
-from src.graph.router import router as graph_router
-from src.globe.router import router as globe_router
-from src.geocoding.router import router as geocoding_router
 from src.export.router import router as export_router
-from src.contacts.router import router as contacts_router
+from src.geocoding.router import router as geocoding_router
+from src.globe.router import router as globe_router
+from src.graph.router import router as graph_router
 from src.lib.database import engine
 from src.lib.exceptions import (
     AppException,
