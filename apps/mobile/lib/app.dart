@@ -32,15 +32,17 @@ class GlobeApp extends ConsumerWidget {
         themeMode: themeMode,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF18181B),
+            seedColor: const Color(0xFF292524),
             brightness: Brightness.light,
+            surface: const Color(0xFFFFFBF5),
           ),
           useMaterial3: true,
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF18181B),
+            seedColor: const Color(0xFF292524),
             brightness: Brightness.dark,
+            surface: const Color(0xFF1C1917),
           ),
           useMaterial3: true,
         ),
