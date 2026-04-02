@@ -32,7 +32,7 @@ export function ContactFilters() {
         />
       </div>
       <div className="flex items-center gap-2">
-        <Select value={filters.sort} onValueChange={(value: string) => setFilters({ sort: value || null })}>
+        <Select value={filters.sort} onValueChange={(value: string | null) => setFilters({ sort: value || null })}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -45,7 +45,6 @@ export function ContactFilters() {
           </SelectContent>
         </Select>
         <ToggleGroup
-          type="multiple"
           variant="outline"
           size="sm"
           value={toggleValues}

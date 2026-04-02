@@ -1,7 +1,8 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { api, type CursorMeta } from '@/lib/api';
+import { api } from '@/lib/api';
+import type { CursorMeta } from '@/lib/api/types';
 
 export interface Contact {
   id: number;
