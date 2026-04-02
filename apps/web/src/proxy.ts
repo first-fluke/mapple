@@ -1,18 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/auth/callback'];
+const PUBLIC_PATHS = ['/login', '/api/auth'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  const hasToken = request.cookies.has('access_token');
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
 
-  if (!isPublic && !hasToken) {
+  const sessionCookie =
+    request.cookies.get('better-auth.session_token') ?? request.cookies.get('__Secure-better-auth.session_token');
+
+  if (!sessionCookie?.value) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (pathname === '/login' && hasToken) {
+  if (pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -20,5 +24,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
