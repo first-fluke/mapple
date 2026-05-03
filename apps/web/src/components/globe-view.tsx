@@ -14,10 +14,11 @@ export function GlobeView() {
   const flyToProcessed = useRef(false);
 
   useEffect(() => {
+    // Page-level placeholder: the real Globe (apps/web/src/components/globe/globe-view.tsx)
+    // consumes flyToContactId via prop and calls pointOfView. Once GlobeDynamic is mounted
+    // here, pass {flyToTarget} as flyToContactId and remove this acknowledgement effect.
     if (flyToTarget && !flyToProcessed.current) {
       flyToProcessed.current = true;
-      // TODO: Integrate with actual Globe component to fly-to the contact's coordinates
-      console.log(`[Globe] Flying to contact: ${flyToTarget}`);
       setFlyToTarget(null);
     }
     if (!flyToTarget) {

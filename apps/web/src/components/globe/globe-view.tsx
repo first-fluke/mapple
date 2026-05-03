@@ -18,6 +18,7 @@ interface GlobeViewProps {
   width?: number;
   height?: number;
   onPinClick?: (pin: GlobePin) => void;
+  flyToContactId?: string | null;
 }
 
 const GLOBE_IMAGE_URL = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
@@ -64,7 +65,7 @@ function createPinElement(pin: GlobePin): HTMLElement {
   return container;
 }
 
-export function GlobeView({ pins = [], width, height, onPinClick }: GlobeViewProps) {
+export function GlobeView({ pins = [], width, height, onPinClick, flyToContactId }: GlobeViewProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const [camera, setCamera] = useAtom(cameraAtom);
   const initializedRef = useRef(false);
@@ -119,6 +120,13 @@ export function GlobeView({ pins = [], width, height, onPinClick }: GlobeViewPro
     },
     [onPinClick],
   );
+
+  useEffect(() => {
+    if (!flyToContactId || !globeRef.current) return;
+    const pin = pins.find((p) => p.id === flyToContactId);
+    if (!pin) return;
+    globeRef.current.pointOfView({ lat: pin.lat, lng: pin.lng, altitude: 1.5 }, 800);
+  }, [flyToContactId, pins]);
 
   return (
     <ReactGlobe

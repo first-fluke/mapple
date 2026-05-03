@@ -19,10 +19,10 @@ export function GraphView({ initialFocus }: GraphViewProps) {
   const [focus, setFocus] = useQueryState('focus', graphSearchParams.focus);
 
   useEffect(() => {
-    if (initialFocus) {
-      // TODO: Integrate with actual Graph component to highlight/center the focused contact
-      console.log(`[Graph] Focusing on contact: ${initialFocus}`);
-    }
+    // Page-level placeholder: when the real Graph (react-force-graph-2d) is mounted here,
+    // resolve initialFocus -> node and call ref.centerAt(x, y, ms) plus a nodeColor/nodeVal
+    // callback to highlight the focused node. Until then, the focus appears in the URL only.
+    if (!initialFocus) return;
   }, [initialFocus]);
 
   const handleContactClick = (contactId: string) => {
