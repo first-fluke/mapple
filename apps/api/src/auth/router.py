@@ -9,8 +9,13 @@ from src.auth.service import AuthService
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
+from src.lib.rate_limit import check_rate_limit
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["auth"],
+    dependencies=[Depends(check_rate_limit)],
+)
 
 
 @router.get("/me")

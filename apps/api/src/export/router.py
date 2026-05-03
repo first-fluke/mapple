@@ -5,8 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.export.service import ExportService
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
+from src.lib.rate_limit import check_rate_limit
 
-router = APIRouter(prefix="/export", tags=["export"])
+router = APIRouter(
+    prefix="/export",
+    tags=["export"],
+    dependencies=[Depends(check_rate_limit)],
+)
 
 
 @router.get("/contacts")
