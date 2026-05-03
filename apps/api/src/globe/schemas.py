@@ -1,5 +1,3 @@
-import datetime
-
 from pydantic import BaseModel, Field
 
 
@@ -23,46 +21,16 @@ class BboxQuery(BaseModel):
         )
 
 
-class GlobeContactOut(BaseModel):
-    id: int
-    name: str
-    email: str | None
-    phone: str | None
-    latitude: float
-    longitude: float
-    created_at: datetime.datetime
-
-
-class GlobeRelationshipOut(BaseModel):
-    source_contact_id: int
-    target_contact_id: int
-    organization_id: int
-    organization_name: str
-
-
-class GlobeClusterOut(BaseModel):
-    latitude: float
-    longitude: float
-    count: int
-    contact_ids: list[int]
-
-
-class GlobeDataOut(BaseModel):
-    contacts: list[GlobeContactOut]
-    relationships: list[GlobeRelationshipOut]
-    clusters: list[GlobeClusterOut]
-from pydantic import BaseModel
 class GlobePinOut(BaseModel):
     id: str
-    avatar_url: str
+    name: str
+    avatar_url: str | None
     lat: float
     lng: float
+
     model_config = {"from_attributes": True}
-    sw_lat: float
-    sw_lng: float
-    ne_lat: float
-    ne_lng: float
-    avatar_url: str | None
+
+
 class GlobeArcOut(BaseModel):
     start_lat: float
     start_lng: float
@@ -71,5 +39,8 @@ class GlobeArcOut(BaseModel):
     type: str
     frequency: int
     contact_ids: list[str]
+
+
+class GlobeDataOut(BaseModel):
     pins: list[GlobePinOut]
     arcs: list[GlobeArcOut]

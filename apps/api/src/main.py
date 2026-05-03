@@ -53,8 +53,6 @@ app.include_router(globe_router)
 app.include_router(organizations_router)
 app.include_router(tags_router)
 app.include_router(upload_router)
-app.include_router(meetings_router)
-app.include_router(contacts_router)
 
 
 @app.get("/health")
