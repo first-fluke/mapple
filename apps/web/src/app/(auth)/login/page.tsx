@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { authClient } from '@/lib/auth-client';
@@ -60,6 +59,17 @@ export default function LoginPage() {
           <GitHubIcon />
           Continue with GitHub
         </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          로그인 시{' '}
+          <Link href="/legal/terms" className="underline underline-offset-2 hover:text-foreground">
+            이용약관
+          </Link>
+          과{' '}
+          <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-foreground">
+            개인정보처리방침
+          </Link>
+          에 동의하는 것으로 간주됩니다.
+        </p>
       </CardContent>
     </Card>
   );
