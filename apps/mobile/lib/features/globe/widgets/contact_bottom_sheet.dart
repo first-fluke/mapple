@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 class ContactBottomSheet extends StatelessWidget {
   final String contactId;
@@ -104,7 +105,7 @@ class ContactBottomSheet extends StatelessWidget {
                 label: const Text('View Profile'),
                 onPress: () {
                   Navigator.of(context).pop();
-                  // TODO: navigate to full contact detail
+                  context.push('/contacts/$contactId');
                 },
               ),
             ),

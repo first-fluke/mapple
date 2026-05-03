@@ -2,13 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:mobile/core/config.dart';
 import 'package:mobile/database/database.dart';
 import 'package:mobile/database/database_provider.dart';
 
 final contactsRepositoryProvider = Provider<ContactsRepository>((ref) {
   return ContactsRepository(
     db: ref.watch(databaseProvider),
-    dio: Dio(BaseOptions(baseUrl: 'http://localhost:8000')),
+    dio: Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl)),
   );
 });
 
