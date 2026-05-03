@@ -4,6 +4,7 @@ node_modules/
 # Environment
 .env
 .env.*
+!.env.example
 
 # OS
 .DS_Store
@@ -20,9 +21,22 @@ __pycache__/
 .agent-valley/
 .omc/
 .symphony/
+.serena/
+.cursor/
+.agents/results/
+.agents/state/
+.agents/.backup-*/
+
+# Local plan artifacts
+docs/plans/
 
 # Fly.io
 .fly/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
 
 # Auth database
 auth.db
