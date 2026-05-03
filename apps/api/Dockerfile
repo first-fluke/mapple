@@ -35,6 +35,10 @@ COPY --from=builder --chown=app:app /app/.venv /app/.venv
 # Copy application source
 COPY --chown=app:app src/ src/
 
+# Copy alembic migrations and config (required by fly release_command)
+COPY --chown=app:app alembic/ alembic/
+COPY --chown=app:app alembic.ini ./
+
 # Ensure venv binaries are on PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
