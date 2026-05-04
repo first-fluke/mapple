@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { authClient } from '@/lib/auth-client';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 function GitHubIcon() {
   return (
@@ -38,10 +39,8 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const handleLogin = (provider: 'google' | 'github') => {
-    authClient.signIn.social({
-      provider,
-      callbackURL: '/',
-    });
+    if (typeof window === 'undefined') return;
+    window.location.href = `${API_BASE_URL}/auth/login/${provider}?return_to=/`;
   };
 
   return (

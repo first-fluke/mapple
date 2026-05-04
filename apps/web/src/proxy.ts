@@ -1,25 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/api/auth'];
+// Auth gating moved to client (AuthBootstrap + tokenAtom). The proxy is a
+// pure pass-through now; protected route guards live in the React tree
+// because tokens are in memory + localStorage, not cookies.
+//
+// rule 6 (.claude/rules/frontend.md): NEVER convert this back to middleware.ts.
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
-
-  const sessionCookie =
-    request.cookies.get('better-auth.session_token') ?? request.cookies.get('__Secure-better-auth.session_token');
-
-  if (!sessionCookie?.value) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
+export function proxy(_request: NextRequest) {
   return NextResponse.next();
 }
 
