@@ -24,9 +24,12 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-database_url = os.getenv(
-    "DATABASE_URL",
-    config.get_main_option("sqlalchemy.url"),
+# Prefer MIGRATION_DATABASE_URL (Supabase direct port 5432) over runtime
+# DATABASE_URL (pooler 6543). Pooler can't run DDL reliably in transaction mode.
+database_url = (
+    os.getenv("MIGRATION_DATABASE_URL")
+    or os.getenv("DATABASE_URL")
+    or config.get_main_option("sqlalchemy.url")
 )
 
 

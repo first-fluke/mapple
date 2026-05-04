@@ -1,8 +1,11 @@
+import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from src.auth.router import router as auth_router
 from src.contacts.router import router as contacts_router
@@ -23,6 +26,19 @@ from src.tags.router import router as tags_router
 from src.upload.router import router as upload_router
 
 
+ENV = os.getenv("ENV", "dev")
+IS_PROD = ENV == "prod"
+
+CORS_ALLOW_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        "CORS_ALLOW_ORIGINS",
+        "http://localhost:3000",
+    ).split(",")
+    if o.strip()
+]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     yield
@@ -34,6 +50,18 @@ app = FastAPI(
     title="Globe CRM API",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url=None if IS_PROD else "/docs",
+    redoc_url=None if IS_PROD else "/redoc",
+    openapi_url=None if IS_PROD else "/openapi.json",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ALLOW_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "If-None-Match"],
+    expose_headers=["ETag"],
 )
 
 
@@ -56,5 +84,24 @@ app.include_router(upload_router)
 
 
 @app.get("/health")
-async def health() -> dict:
-    return {"status": "ok"}
+async def health() -> JSONResponse:
+    db_ok = False
+    redis_ok = False
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception:
+        db_ok = False
+    try:
+        await redis.ping()
+        redis_ok = True
+    except Exception:
+        redis_ok = False
+
+    overall_ok = db_ok and redis_ok
+    body = {
+        "status": "ok" if overall_ok else "degraded",
+        "checks": {"db": db_ok, "redis": redis_ok},
+    }
+    return JSONResponse(content=body, status_code=200 if overall_ok else 503)
