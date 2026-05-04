@@ -1,26 +1,21 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
 import type { GlobeData } from '@/lib/api/globe';
+import { apiFetch } from '@/lib/auth/api-client';
 
-export interface BboxParams {
-  swLat: number;
-  swLng: number;
-  neLat: number;
-  neLng: number;
+interface ApiEnvelope {
+  data: GlobeData;
 }
 
-export function useGlobeData(bbox: BboxParams | null) {
+export function useGlobeData(limit = 200) {
   return useQuery({
-    queryKey: ['globe-data', bbox],
+    queryKey: ['globe-data', limit],
     queryFn: async () => {
-      if (!bbox) throw new Error('No bbox');
-      const { data } = await api.get<GlobeData>(
-        `/globe/data?sw_lat=${bbox.swLat}&sw_lng=${bbox.swLng}&ne_lat=${bbox.neLat}&ne_lng=${bbox.neLng}`,
-      );
-      return data;
+      const res = await apiFetch(`/globe/data?limit=${limit}`);
+      if (!res.ok) throw new Error('failed to load globe data');
+      const body = (await res.json()) as ApiEnvelope;
+      return body.data;
     },
-    enabled: bbox !== null,
   });
 }
