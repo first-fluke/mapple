@@ -14,7 +14,13 @@ from typing import Any
 import jwt
 from redis.asyncio import Redis
 
-from src.lib.auth import JWT_ALGORITHM, JWT_AUDIENCE, JWT_ISSUER, JWT_SIGNING_KEY
+from src.lib.auth import (
+    JWT_ALGORITHM,
+    JWT_AUDIENCE,
+    JWT_ISSUER,
+    JWT_KID_PRIMARY,
+    JWT_SIGNING_KEY,
+)
 from src.lib.exceptions import UnauthorizedException
 
 # ---------------------------------------------------------------------------
@@ -45,19 +51,34 @@ def issue_access(user_id: str) -> tuple[str, int]:
         "iss": JWT_ISSUER,
         "aud": JWT_AUDIENCE,
     }
-    token = jwt.encode(payload, JWT_SIGNING_KEY, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(
+        payload,
+        JWT_SIGNING_KEY,
+        algorithm=JWT_ALGORITHM,
+        headers={"kid": JWT_KID_PRIMARY},
+    )
     return token, exp
 
 
 def verify_access(token: str) -> dict[str, Any]:
     """Verify and decode a JWS access token.
 
-    Raises UnauthorizedException on any failure.
+    Resolves the signing key via the token's kid header so a rotation
+    in JWT_SIGNING_KEY_NEXT is honored without restart.
     """
+    from src.lib.auth import resolve_signing_key
+
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+    except jwt.InvalidTokenError as exc:
+        raise UnauthorizedException(message=f"Invalid token header: {exc}")
+
+    key = resolve_signing_key(unverified_header.get("kid"))
+
     try:
         return jwt.decode(
             token,
-            JWT_SIGNING_KEY,
+            key,
             algorithms=[JWT_ALGORITHM],
             issuer=JWT_ISSUER,
             audience=JWT_AUDIENCE,
