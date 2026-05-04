@@ -27,3 +27,12 @@ class AuthService:
         if not user:
             raise UnauthorizedException(message="User not found")
         await self.repo.delete(user)
+
+    async def upsert_oauth_user(
+        self,
+        *,
+        email: str,
+        name: str,
+        image: str | None,
+    ) -> User:
+        return await self.repo.upsert_by_email(email=email, name=name, image=image)

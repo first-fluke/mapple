@@ -1,3 +1,5 @@
+import secrets
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +17,33 @@ class AuthRepository:
         stmt = select(User).where(User.email == email)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def upsert_by_email(
+        self,
+        *,
+        email: str,
+        name: str,
+        image: str | None,
+    ) -> User:
+        existing = await self.find_by_email(email)
+        if existing:
+            existing.name = name or existing.name
+            if image is not None:
+                existing.image = image
+            await self.session.commit()
+            await self.session.refresh(existing)
+            return existing
+
+        user = User(
+            id=secrets.token_urlsafe(16),
+            email=email,
+            name=name or email,
+            image=image,
+        )
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
 
     async def update(self, user: User, **kwargs: str | None) -> User:
         for key, value in kwargs.items():
