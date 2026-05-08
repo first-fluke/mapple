@@ -10,7 +10,11 @@ const ForceGraphView = dynamic(() => import('@/components/graph/force-graph'), {
 
 export default function GraphPage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading graph...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading graph...</div>
+      }
+    >
       <GraphPageContent />
     </Suspense>
   );
