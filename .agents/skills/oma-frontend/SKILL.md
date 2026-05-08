@@ -131,6 +131,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 
 | Category | Library |
 |----------|---------|
+| Framework | `next@16+` (App Router) + `react@19+` — `next < 16` is BANNED |
 | Date | `luxon` |
 | Styling | `TailwindCSS v4` + `shadcn/ui` |
 | Hooks | `ahooks` (pre-made hooks preferred) |
@@ -140,6 +141,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 | State (Client) | `Jotai` (minimize use) |
 | Forms | `@tanstack/react-form` + `zod` |
 | Auth | `better-auth` (client SDK only — never import server library or database adapters) |
+| Animation | `motion` — import from `motion/react`. `framer-motion` (legacy package name) is BANNED. |
 
 ### Shadcn Workflow
 
@@ -160,6 +162,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 
 ### Sources of Truth
 
+- **DESIGN.md** (project root): visual system source of truth — read Section 9 (Agent Prompt Guide) verbatim for component prompts when present
 - **Design Tokens**: `packages/design-tokens` (OKLCH) — never hardcode colors
 - **i18n strings**: `packages/i18n` — never hardcode UI text
 - **Custom utilities**: check `es-toolkit` first; if implementing custom logic, >90% unit test coverage is mandatory
@@ -169,23 +172,29 @@ Then run the project's frontend verification commands, typically lint, typecheck
 - **Sync**: Map code variables to Figma layer names
 - **UX**: Ensure key actions are visible "Above the Fold"
 
+### Stack Reference
+
+Project stack conventions live in dedicated files. **Read these before coding** — they are not optional appendix material.
+
+| File | Owns |
+|---|---|
+| `resources/tech-stack.md` | Framework versions, Next.js 16 `proxy.ts` conventions, Serena shortcuts |
+| `resources/tailwind-rules.md` | Design tokens, focus states, Tailwind v4 `@theme` syntax |
+| `resources/snippets.md` | React 19 hook patterns, TanStack Query/Form, a11y card |
+
+To extend: add `resources/<name>.md` and append a row above.
+
 ## References
 
 1. Follow `resources/execution-protocol.md` step by step.
-2. See `resources/examples.md` for input/output examples.
-3. Before submitting, run `resources/checklist.md`.
+2. Before submitting, run `resources/checklist.md`.
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 - Project frontend rules (MUST load before review/implementation): `../../rules/frontend.md`
-- Tech stack & Serena shortcuts: `resources/tech-stack.md`
 - Execution steps: `resources/execution-protocol.md`
-- Code examples: `resources/examples.md`
-- Code snippets: `resources/snippets.md`
 - Checklist: `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
-- Component template: `resources/component-template.tsx`
-- Tailwind rules: `resources/tailwind-rules.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`

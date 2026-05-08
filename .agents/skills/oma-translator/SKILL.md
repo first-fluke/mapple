@@ -117,9 +117,56 @@ Strip away source language structure. Ask yourself:
 
 Do NOT start forming target sentences yet.
 
+### Stage 2.5: Persona Assignment
+
+Persona resolution has two layers: **content-type** (what kind of text) and **voice** (how punchy or formal the rhythm). Both are needed.
+
+#### Layer 1: Read `translation_voice` from `.agents/oma-config.yaml`
+
+The `translation_voice` field controls global rhythm/formality. Three values:
+
+| Voice | Style override applied on top of content-type |
+|---|---|
+| `formal` | complete sentences only, no fragments, strict 합니다체/です・ます, no padding cuts |
+| `balanced` (default) | content-type defaults — fragments allowed only in label/cell positions |
+| `interpreter` | interpreter mindset across all content types: punchy, audience-first, spoken cadence, fragments allowed when natural in target, drops formal padding ("을 받았습니다" → "받음" / "을 모두" → drop) |
+
+If the field is missing, default to `balanced`. If `oma-config.yaml` is unreadable, also `balanced`.
+
+#### Layer 2: Content-type persona table
+
+| Content type | Persona | Base style markers |
+|---|---|---|
+| UI strings / microcopy | UX copywriter | concise, imperative, user-friendly |
+| Docs / README / API reference | technical writer | data + commentary, expanded explanations |
+| Benchmark / report / changelog | technical reporter | data + commentary, objective tone |
+| Marketing / landing / hero copy | brand copywriter | concise impact, audience-first, aggressive transcreation |
+| Blog post / essay | essayist | preserve cadence and rhythm, retain author voice |
+| Literary / prose | literary translator | preserve imagery, style consistency, narrative voice |
+| Dialogue / subtitle / interview | interpreter | immediacy, audience-first, spoken register, cultural context inline |
+
+Classification heuristics:
+- File location `messages/`, `locales/`, `*.arb` → UX copywriter
+- Filename `README*`, `docs/*`, or `.md` with frequent code blocks → technical writer
+- Score tables, benchmark stats, changelog rows → technical reporter
+- Page/section hero copy → brand copywriter
+- Quote marks, em-dashes, speaker labels in source → interpreter
+
+When unclear, default to **technical writer** for code-adjacent content and **essayist** for prose. Never use a generic "translator" persona.
+
+#### Combining layers
+
+Voice is applied **on top** of the content-type persona. Examples:
+
+- Content-type = `technical reporter` + voice = `formal` → fully expanded sentences, no fragments anywhere, strict 합니다체.
+- Content-type = `technical reporter` + voice = `balanced` → complete sentences in body, fragments allowed in table cells (current default).
+- Content-type = `technical reporter` + voice = `interpreter` → punchier rhythm, list-item fragments allowed (e.g., "39턴 / 8m 13s / $1.28 (파일당 $0.14)" instead of "39턴, 8m 13s, 총 $1.28을 썼습니다(파일당 약 $0.14)"), drops "을 모두 받았습니다" padding.
+
+The persona is then **localized to the target language** at execution time — translating into Korean as a "technical reporter" with `interpreter` voice means thinking as a Korean technical reporter who values rhythm and audience scan-speed over formal completeness.
+
 ### Stage 3: Reconstruct in Target Language
 
-Rebuild from meaning, following target language norms:
+Rebuild from meaning **as the assigned persona**, following target language norms:
 
 **Word order**: Follow target language's natural structure.
 - EN → KO: SVO → SOV, move verb to end, particles replace prepositions
@@ -144,10 +191,12 @@ This stage is mandatory. Skipping any item is a bug, not a shortcut. Before prod
 
 **A. Mechanical checks (run before rubric, must all pass):**
 
-- **CJK em dash scan**: For Korean, Japanese, or Chinese targets, search the draft output for `—`. Every occurrence must be replaced with a comma, colon, parenthesis, or restructured sentence. Zero em dashes in the emitted output.
+- **CJK em dash scan**: For Korean, Japanese, or Chinese targets, search the draft output for `—`. Every occurrence must be **structurally restructured** — never simply substituted with `:` / `(` / `,`. Em dash usually signals a definitional `X — Y` pattern that maps to coordinated noun phrases, relative clauses, or separate sentences in CJK. Zero em dashes AND zero mechanical-substitution survivors in the emitted output. (See anti-AI rule 17.)
+- **Curly quote scan**: Search the draft output for `“`, `”`, `‘`, `’`. Replace with straight quotes (`"`, `'`) unless the source explicitly uses curly quotes, the target language convention requires them (e.g., Japanese 「」/『』, French «»), or the surrounding file format mandates them.
 - **Placeholder integrity**: Every `{name}`, `{{count}}`, `%s`, `<tag>`, and `` `code` `` from the source appears unchanged in the target.
 - **Structure parity**: Headings, list bullets, table rows, code blocks, and links match the source count and nesting.
 - **Register consistency**: One sentence-ending style throughout (don't mix `-ㅂ니다` with `-다`, formal with casual).
+- **Sibling-pattern match (when applicable)**: If the target lives in a context that already contains target-language siblings (markdown table rows, locale file with sibling values, glossary entries, list items in a doc), read at least 3 siblings and identify (a) separator style — comma vs `및`/`와`/`과` vs em dash vs colon vs newline, (b) action-verb form — noun-phrase fragments vs full verb phrases vs imperative, (c) loanword density, (d) register and sentence-ending style. Your draft MUST match the dominant pattern. If the draft uses a separator/verb form/register absent from siblings, BLOCK and revise. Example failure: siblings use comma-separated noun phrases without colons; your draft uses `X: Y and Z` colon syntax. → revise to comma form.
 
 If any mechanical check fails, revise and re-run. Do not proceed to the rubric until all pass.
 
@@ -171,6 +220,16 @@ If any mechanical check fails, revise and re-run. Do not proceed to the rubric u
 13. Were all metaphors/idioms handled per the classify decision (interpret/substitute/retain)?
 14. Do figurative expressions read naturally in the target language, not as literal calques?
 
+**E. Pre-emit gate (must answer in writing before output):**
+
+Before emitting the translation, write 1–2 sentences answering each:
+
+1. **"Why is Stage 5 reflection ON or OFF for this content?"** — must cite the specific classification rule from the "When to run Stage 5–7" section. If the target qualifies for both ON and OFF lists (e.g., README table cell — short string AND documentation), default ON wins.
+2. **"Does my draft match the sibling patterns in the target context?"** — must reference at least one specific sibling and the matched (or unmatched) pattern dimension.
+3. **"Is any source-language structural artifact (em dash, colon-after-X, parentheses-after-noun) merely substituted rather than restructured?"** — must answer No, with evidence.
+
+If any answer is missing, hand-wavy, or "I think so" without evidence, run Stage 5 anyway before emitting.
+
 ### Translator's Notes Guidelines
 
 When adding explanatory notes for terms, cultural references, or concepts that target readers may struggle with:
@@ -189,14 +248,37 @@ When adding explanatory notes for terms, cultural references, or concepts that t
 - Don't annotate self-explanatory terms or widely recognized loanwords
 - If a comprehension challenge was identified in Stage 1, use the pre-planned explanation
 
-### Refined Mode (Long-form Content)
+### Reflection Mode (default for non-trivial content)
 
-For publication-quality translation of long-form content (articles, documentation, essays), extend the standard 4-stage workflow with three additional passes. Use when explicitly requested or when the content demands high polish.
+Reflection passes (Stage 5–7) are the default — not optional — for any content that is more than a short snippet. Empirical evidence (Slator 2024, Self-Refine paper) shows a single polish pass cuts translationese rates roughly in half. Skipping reflection on non-trivial content is the most common cause of translationese complaints.
 
-### When to use
-- User explicitly requests "refined", "publication quality", or "정밀 번역"
-- Important documents, official publications, marketing materials
-- Content where naturalness and readability are critical
+### When to run Stage 5–7
+
+Default ON for:
+- Documentation (README, guides, API reference)
+- Reports, benchmarks, changelogs, blog posts
+- Marketing copy and landing pages
+- Any prose longer than ~3 sentences
+- Anything containing tables, bullet lists, or code blocks mixed with prose
+- Translation review mode
+
+Default OFF (Stage 4 verification only) for:
+- Single short UI string (< 10 words) **in a UI locale file** (i18n keys, `.arb`, `.json`, `messages/`) with established glossary
+- Batch UI key translations where each value is independent and < 1 sentence
+- User explicitly requests "fast translation", "skip reflection", or "직역"
+
+**Tie-breaker rule**: When a target qualifies for BOTH ON and OFF categories, default ON wins. Common conflict cases:
+
+| Situation | Why both | Resolution |
+|---|---|---|
+| README table cell (short AND documentation) | <10 words but lives in `README*.md` | ON — README is documentation |
+| CHANGELOG line entry | <10 words but lives in changelog | ON — changelog is documentation |
+| Skill description in registry | short noun phrase but commits to git-tracked source | ON — any git-tracked text |
+| Tooltip in i18n file | <10 words AND in `messages/` | OFF — UI string in locale file |
+
+Reflection cost is acceptable; post-merge revision cost is not.
+
+When in doubt, run reflection. The cost is roughly 1.5–2× tokens; the quality gain on body-text fragments and Europeanized patterns is large.
 
 ### Extended workflow
 
@@ -204,7 +286,9 @@ After completing Stage 1–4, continue with:
 
 **Stage 5: Critical Review**
 
-Re-read the translation against the source with fresh eyes. Produce a diagnostic review (no rewriting yet):
+Re-read the translation against the source with fresh eyes. Produce a diagnostic review (no rewriting yet).
+
+Start the review by explicitly answering this question first: **"What makes the draft below still feel obviously machine-translated or AI-generated?"** Write 3–7 short bullets naming the remaining tells (e.g., "register suddenly shifts to formal in the final paragraph", "the same connective construction repeats three times", "noun-ending fragments survive in body text outside label/cell positions", "a metaphor was kept literal where the target language would interpret it"). Then continue with the structured checklist:
 
 - **Accuracy**: Compare paragraph by paragraph — any facts, numbers, or qualifiers altered?
 - **Europeanized language**: Scan for unnecessary connectives, passive voice, noun pile-up, over-nominalization, forced pronouns (see `resources/anti-ai-patterns.md`)
