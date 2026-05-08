@@ -20,7 +20,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { isDeactivationRequest } from "./keyword-detector.ts";
 import {
   type ModeState,
@@ -51,7 +51,7 @@ interface TriggerConfig {
 }
 
 function loadPersistentWorkflows(): string[] {
-  const configPath = join(dirname(import.meta.path), "triggers.json");
+  const configPath = join(import.meta.dirname, "triggers.json");
   try {
     const config: TriggerConfig = JSON.parse(readFileSync(configPath, "utf-8"));
     return Object.entries(config.workflows)

@@ -13,6 +13,7 @@
  */
 
 import {
+  type Dirent,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -29,7 +30,7 @@ const DEFAULT_CJK_SCRIPTS = ["ko", "ja", "zh"];
 // ── Vendor Detection ──────────────────────────────────────────
 
 function inferVendorFromScriptPath(): Vendor | null {
-  const path = import.meta.path;
+  const path = import.meta.filename;
   if (path.includes(`${join(".cursor", "hooks")}`)) return "cursor";
   if (path.includes(`${join(".qwen", "hooks")}`)) return "qwen";
   if (path.includes(`${join(".claude", "hooks")}`)) return "claude";
@@ -85,7 +86,7 @@ interface SkillsTriggerConfig {
 }
 
 function loadTriggersConfig(): SkillsTriggerConfig {
-  const configPath = join(dirname(import.meta.path), "triggers.json");
+  const configPath = join(import.meta.dirname, "triggers.json");
   if (!existsSync(configPath)) return {};
   try {
     return JSON.parse(readFileSync(configPath, "utf-8"));
@@ -139,9 +140,12 @@ export function discoverSkills(projectDir: string): SkillEntry[] {
   if (!existsSync(skillsDir)) return [];
 
   const out: SkillEntry[] = [];
-  let entries: ReturnType<typeof readdirSync>;
+  let entries: Dirent<string>[];
   try {
-    entries = readdirSync(skillsDir, { withFileTypes: true });
+    entries = readdirSync(skillsDir, {
+      withFileTypes: true,
+      encoding: "utf8",
+    });
   } catch {
     return out;
   }
@@ -205,8 +209,10 @@ export function matchSkills(
     let score = 0;
 
     for (let i = 0; i < patterns.length; i++) {
-      if (patterns[i].test(prompt)) {
-        matched.push(allTriggers[i]);
+      const pattern = patterns[i];
+      const trigger = allTriggers[i];
+      if (pattern && trigger && pattern.test(prompt)) {
+        matched.push(trigger);
         score += 10;
       }
     }

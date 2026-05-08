@@ -20,7 +20,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import {
   type ModeState,
   makePromptOutput,
@@ -163,7 +163,7 @@ export function recordKwTrigger(
 // ── Vendor Detection ──────────────────────────────────────────
 
 function inferVendorFromScriptPath(): Vendor | null {
-  const path = import.meta.path;
+  const path = import.meta.filename;
   if (path.includes(`${join(".cursor", "hooks")}`)) return "cursor";
   if (path.includes(`${join(".qwen", "hooks")}`)) return "qwen";
   if (path.includes(`${join(".claude", "hooks")}`)) return "claude";
@@ -230,7 +230,7 @@ interface TriggerConfig {
 }
 
 function loadConfig(): TriggerConfig {
-  const configPath = join(dirname(import.meta.path), "triggers.json");
+  const configPath = join(import.meta.dirname, "triggers.json");
   return JSON.parse(readFileSync(configPath, "utf-8"));
 }
 
@@ -342,7 +342,7 @@ const QUESTION_PATTERNS: RegExp[] = [
 ];
 
 export function isAnalyticalQuestion(prompt: string): boolean {
-  const firstLine = prompt.split("\n")[0].trim();
+  const firstLine = (prompt.split("\n")[0] ?? "").trim();
   return QUESTION_PATTERNS.some((p) => p.test(firstLine));
 }
 
@@ -393,8 +393,8 @@ export function detectExtensions(prompt: string): string[] {
   const extPattern = /\.([a-zA-Z]{1,12})\b/g;
   const extensions = new Set<string>();
   for (const match of prompt.matchAll(extPattern)) {
-    const ext = match[1].toLowerCase();
-    if (!EXCLUDE_EXTS.has(ext)) {
+    const ext = match[1]?.toLowerCase();
+    if (ext && !EXCLUDE_EXTS.has(ext)) {
       extensions.add(ext);
     }
   }
