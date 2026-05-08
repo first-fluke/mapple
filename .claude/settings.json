@@ -73,5 +73,6 @@
   "attribution": {
     "commit": "Generated with oh-my-agent\n\nCo-Authored-By: First Fluke <our.first.fluke@gmail.com>",
     "pr": "Generated with [oh-my-agent](https://github.com/first-fluke/oh-my-agent)"
-  }
+  },
+  "skillListingBudgetFraction": 0.02
 }
