@@ -9,6 +9,14 @@ import { useGraphData } from '@/hooks/use-graph-data';
 const ForceGraphView = dynamic(() => import('@/components/graph/force-graph'), { ssr: false });
 
 export default function GraphPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading graph...</div>}>
+      <GraphPageContent />
+    </Suspense>
+  );
+}
+
+function GraphPageContent() {
   const { search, type, focus } = useGraphFilters();
   const { data, isLoading, isError } = useGraphData({
     search: search || undefined,
