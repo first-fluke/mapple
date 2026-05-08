@@ -1,0 +1,38 @@
+[tools]
+terraform = "latest"
+
+[tasks.init]
+description = "Initialize Terraform"
+run = "terraform init"
+
+[tasks.plan]
+description = "Plan infrastructure"
+run = "terraform plan"
+
+[tasks.apply]
+description = "Apply infrastructure"
+run = "terraform apply"
+
+[tasks.destroy]
+description = "Destroy infrastructure"
+run = "terraform destroy"
+
+[tasks.fmt]
+description = "Format Terraform"
+run = "terraform fmt -recursive"
+
+[tasks.validate]
+description = "Validate Terraform"
+run = "terraform validate"
+
+[tasks.output]
+description = "Show Terraform outputs (JSON)"
+run = "terraform output -json"
+
+[tasks."fly:sync"]
+description = "Apply Terraform output secrets to the Fly.io api app"
+run = '''
+set -euo pipefail
+APP="${FLY_APP:-globe-crm-api}"
+terraform output -json fly_secrets | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' | xargs -I {} flyctl secrets set --app "$APP" {}
+'''
