@@ -36,7 +36,7 @@ mise install
 - Do not modify `.agents/` or `.claude/` directories
 - Run `npx @biomejs/biome check` before committing JS/TS changes
 - Keep docker-compose services pinned to major versions
-- All database changes go through migration files in `packages/db`
+- All database changes go through migration files in `apps/api/alembic/`
 
 <!-- OMA:START — managed by oh-my-agent. Do not edit this block manually. -->
 
@@ -62,16 +62,16 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 
 | Workflow | File | Description |
 |----------|------|-------------|
-| orchestrate | `orchestrate.md` | Parallel subagents + Review Loop |
-| work | `work.md` | Step-by-step with remediation loop |
-| ultrawork | `ultrawork.md` | 5-Phase Gate Loop (11 reviews) |
-| plan | `plan.md` | PM task breakdown |
-| brainstorm | `brainstorm.md` | Design-first ideation |
-| review | `review.md` | QA audit |
-| debug | `debug.md` | Root cause + minimal fix |
-| deepsec | `deepsec.md` | Drive `oma-deepsec` end-to-end (setup / scan / pr-review / matchers / triage) |
-| scm | `scm.md` | SCM + Git operations + Conventional Commits |
-| docs | `docs.md` | Documentation drift verify + sync |
+| orchestrate | `.agents/workflows/orchestrate.md` | Parallel subagents + Review Loop |
+| work | `.agents/workflows/work.md` | Step-by-step with remediation loop |
+| ultrawork | `.agents/workflows/ultrawork.md` | 5-Phase Gate Loop (11 reviews) |
+| plan | `.agents/workflows/plan.md` | PM task breakdown |
+| brainstorm | `.agents/workflows/brainstorm.md` | Design-first ideation |
+| review | `.agents/workflows/review.md` | QA audit |
+| debug | `.agents/workflows/debug.md` | Root cause + minimal fix |
+| deepsec | `.agents/workflows/deepsec.md` | Drive `oma-deepsec` end-to-end (setup / scan / pr-review / matchers / triage) |
+| scm | `.agents/workflows/scm.md` | SCM + Git operations + Conventional Commits |
+| docs | `.agents/workflows/docs.md` | Documentation drift verify + sync |
 
 To execute: read and follow `.agents/workflows/{name}.md` step by step.
 

@@ -40,3 +40,6 @@ docs/plans/
 
 # Auth database
 auth.db
+
+# oma docs generated artifacts
+docs/generated/
