@@ -14,9 +14,8 @@ class Meeting(Base):
         Text, ForeignKey("user.id", ondelete="CASCADE"),
     )
     title: Mapped[str] = mapped_column(String(255))
-    scheduled_at: Mapped[datetime.datetime] = mapped_column()
-    start_time: Mapped[datetime.datetime] = mapped_column()
-    end_time: Mapped[datetime.datetime] = mapped_column()
+    starts_at: Mapped[datetime.datetime] = mapped_column()
+    ends_at: Mapped[datetime.datetime | None] = mapped_column()
     location: Mapped[str | None] = mapped_column(String(255))
     notes: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)

@@ -54,6 +54,9 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
+# Skip e2e tests by default — they require a live server (E2E_API_URL).
+# Run them explicitly with: uv run pytest -m e2e
+addopts = "-m 'not e2e'"
 markers = [
-    "e2e: end-to-end smoke tests against a running API instance",
+    "e2e: end-to-end smoke tests against a running API instance (requires E2E_API_URL)",
 ]

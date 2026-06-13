@@ -68,8 +68,11 @@ class ContactService:
         name: str | None = None,
         email: str | None = None,
         phone: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
         country: str | None = None,
         city: str | None = None,
+        avatar_url: str | None = None,
         tags: list[str] | None = None,
     ) -> Contact:
         contact = await self.repo.find_by_id(contact_id, user_id)
@@ -80,8 +83,11 @@ class ContactService:
             name=name,
             email=email,
             phone=phone,
+            latitude=latitude,
+            longitude=longitude,
             country=country,
             city=city,
+            avatar_url=avatar_url,
             tags=tags,
         )
 

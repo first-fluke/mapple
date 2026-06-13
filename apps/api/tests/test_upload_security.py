@@ -32,11 +32,14 @@ VALID_IMAGE_TYPES = [
     "image/png",
     "image/jpeg",
     "image/webp",
-    "image/gif",
-    "image/svg+xml",
 ]
 
+# image/gif and image/svg+xml are deliberately NOT accepted: the avatar
+# whitelist is restricted to raster formats that are safe to render. SVG in
+# particular can carry embedded scripts (stored XSS), so it is rejected.
 INVALID_CONTENT_TYPES = [
+    "image/gif",
+    "image/svg+xml",
     "application/pdf",
     "application/javascript",
     "text/html",
@@ -102,12 +105,13 @@ async def test_path_traversal_in_content_type(client, payload, mock_storage):
         assert object_name.startswith("1/")
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Null bytes in content_type pass Pydantic regex validation and reach the object name",
-)
 async def test_null_byte_in_content_type_rejected(client, mock_storage):
-    """Null bytes in content_type must be rejected to prevent truncation attacks."""
+    """Null bytes in content_type must be rejected to prevent truncation attacks.
+
+    The avatar content_type is now constrained to a strict Literal whitelist
+    (image/jpeg, image/png, image/webp), so any value containing a null byte
+    is rejected with 422 before it can reach the object name.
+    """
     response = await client.post(
         "/upload/avatar",
         json={"content_type": "image/png\x00.html"},

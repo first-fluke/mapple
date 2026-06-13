@@ -1,16 +1,19 @@
 import datetime
 
 from fastapi import APIRouter, Depends, Query
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
 from src.lib.pagination import paginate_cursor
+from src.lib.rate_limit import check_data_rate_limit
+from src.lib.redis import get_redis
 from src.meetings.schemas import MeetingCreate, MeetingOut, MeetingUpdate
 from src.meetings.service import MeetingService
 
-router = APIRouter(prefix="/meetings", tags=["meetings"])
+router = APIRouter(prefix="/meetings", tags=["meetings"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("")
@@ -53,8 +56,9 @@ async def create_meeting(
     body: MeetingCreate,
     user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
+    redis: Redis = Depends(get_redis),
 ) -> ApiResponse[MeetingOut]:
-    service = MeetingService(session)
+    service = MeetingService(session, redis)
     meeting = await service.create(
         user_id=user_id,
         title=body.title,
@@ -73,8 +77,9 @@ async def update_meeting(
     body: MeetingUpdate,
     user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
+    redis: Redis = Depends(get_redis),
 ) -> ApiResponse[MeetingOut]:
-    service = MeetingService(session)
+    service = MeetingService(session, redis)
     meeting = await service.update(
         user_id=user_id,
         meeting_id=meeting_id,
@@ -93,6 +98,7 @@ async def delete_meeting(
     meeting_id: int,
     user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
+    redis: Redis = Depends(get_redis),
 ) -> None:
-    service = MeetingService(session)
+    service = MeetingService(session, redis)
     await service.delete(user_id=user_id, meeting_id=meeting_id)

@@ -1,16 +1,24 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.contacts.schemas import ContactCreate, ContactOut, ContactUpdate
+from src.contacts.schemas import (
+    ContactAvatarPresignOut,
+    ContactCreate,
+    ContactOut,
+    ContactUpdate,
+)
 from src.contacts.service import ContactService
+from src.lib import storage as storage_lib
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
 from src.lib.pagination import paginate_cursor
+from src.lib.rate_limit import check_data_rate_limit
 from src.meetings.schemas import MeetingOut
 from src.meetings.service import MeetingService
+from src.upload.service import AVATAR_BUCKET, UploadService
 
-router = APIRouter(prefix="/contacts", tags=["contacts"])
+router = APIRouter(prefix="/contacts", tags=["contacts"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("")
@@ -123,6 +131,32 @@ async def delete_contact(
     """Soft-delete a contact."""
     service = ContactService(session)
     await service.delete(user_id=user_id, contact_id=contact_id)
+
+
+@router.post("/{contact_id}/avatar/presign", status_code=201)
+async def create_contact_avatar_presign(
+    contact_id: int,
+    user_id: str = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_session),
+) -> ApiResponse[ContactAvatarPresignOut]:
+    """Issue a presigned upload URL for a contact's avatar.
+
+    Verifies the contact belongs to the caller, then returns both the
+    presigned PUT URL and the public avatar URL to persist afterwards via
+    PATCH /contacts/{id} with {"avatar_url": ...}.
+    """
+    service = ContactService(session)
+    # Raises NotFoundException (404) if the contact is missing or not owned.
+    await service.get_contact(user_id=user_id, contact_id=contact_id)
+
+    upload = UploadService()
+    upload_url, object_name, _expires_in = await upload.create_avatar_presigned_url(
+        user_id, "image/jpeg"
+    )
+    avatar_url = storage_lib.public_url(AVATAR_BUCKET, object_name)
+    return ApiResponse(
+        data=ContactAvatarPresignOut(upload_url=upload_url, avatar_url=avatar_url)
+    )
 
 
 @router.get("/{contact_id}/meetings")

@@ -28,8 +28,29 @@ class GlobeService:
             if c.latitude is not None and c.longitude is not None
         ]
 
-        # Arcs are empty for now — will be populated when communication
-        # tracking is implemented. The bridge protocol supports them.
-        arcs: list[GlobeArcOut] = []
+        arc_rows = await self.repo.find_relationship_arcs(user_id, limit=limit)
+
+        # Normalize strength to 0..1 across the user's edges.
+        # strength in DB is raw shared meeting count (always > 0 per constraint).
+        max_strength = max((r.strength for r in arc_rows), default=0.0)
+
+        arcs = [
+            GlobeArcOut(
+                id=row.rel_id,
+                start_lat=row.lat_1,
+                start_lng=row.lng_1,
+                end_lat=row.lat_2,
+                end_lng=row.lng_2,
+                type="relationship",
+                frequency=int(row.strength),
+                strength=row.strength / max_strength if max_strength > 0 else 0.0,
+                contact_ids=[str(row.contact_id_1), str(row.contact_id_2)],
+                source_contact_id=row.contact_id_1,
+                target_contact_id=row.contact_id_2,
+                source_name=row.name_1,
+                target_name=row.name_2,
+            )
+            for row in arc_rows
+        ]
 
         return GlobeDataOut(pins=pins, arcs=arcs)

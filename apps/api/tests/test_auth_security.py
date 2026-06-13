@@ -2,9 +2,24 @@
 
 Covers OWASP A01 (Broken Access Control), A02 (Cryptographic Failures),
 A07 (Identification and Authentication Failures).
+
+Decision (cluster 4): FIXED TEST
+  - All refresh/logout bodies changed from {"refresh_token": ...} to
+    {"refresh": ...} to match the current RefreshRequest / LogoutRequest
+    Pydantic schemas.
+  - Logout is POST /auth/logout (not DELETE), returns 204 (not 200).
+  - Redis storage uses SHA-256(raw_token) as key, not the raw token — test
+    helpers now use the same hash so assertions are correct.
+
+Decision (cluster 3): FIXED TEST
+  - test_health_endpoint_is_public now asserts {"status": "ok", "checks": {...}}
+    instead of the old {"status": "ok"} bare response.
 """
 
 import datetime
+import hashlib
+import json
+import time
 
 import jwt
 import pytest
@@ -41,7 +56,9 @@ async def test_health_endpoint_is_public(client):
     """Health check must be accessible without authentication."""
     response = await client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    body = response.json()
+    assert body["status"] == "ok"
+    assert "checks" in body
 
 
 # --- A02: Cryptographic Failures (JWT) ---
@@ -83,7 +100,6 @@ async def test_jwt_none_algorithm_attack(client):
         "iat": now,
         "exp": now + datetime.timedelta(minutes=15),
     }
-    # Create unsigned token with alg=none
     token = jwt.encode(payload, key="", algorithm="none")
     headers = {"Authorization": f"Bearer {token}"}
     response = await client.get("/organizations", headers=headers)
@@ -91,11 +107,7 @@ async def test_jwt_none_algorithm_attack(client):
 
 
 async def test_jwt_algorithm_confusion_attack(client):
-    """JWT algorithm confusion (HS256 vs RS256) must be prevented.
-
-    If the server expects HS256 but accepts RS256, an attacker could
-    use the public key as the HMAC secret.
-    """
+    """JWT algorithm confusion (HS256 vs RS256) must be prevented."""
     now = datetime.datetime.now(datetime.UTC)
     payload = {
         "sub": "1",
@@ -103,7 +115,6 @@ async def test_jwt_algorithm_confusion_attack(client):
         "iat": now,
         "exp": now + datetime.timedelta(minutes=15),
     }
-    # Sign with a different algorithm than what server expects
     token = jwt.encode(payload, "some-public-key", algorithm="HS384")
     headers = {"Authorization": f"Bearer {token}"}
     response = await client.get("/organizations", headers=headers)
@@ -131,23 +142,19 @@ async def test_missing_bearer_prefix(client):
 
 async def test_jwt_tampered_payload(client):
     """JWT with tampered payload (invalid signature) must be rejected."""
-    # Create a valid token
     token = jwt.encode(
         {
             "sub": "1",
             "email": "user@test.com",
             "iat": datetime.datetime.now(datetime.UTC),
-            "exp": datetime.datetime.now(datetime.UTC)
-            + datetime.timedelta(minutes=15),
+            "exp": datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=15),
         },
         JWT_TEST_SECRET,
         algorithm="HS256",
     )
-    # Tamper with the token by modifying the payload portion
     parts = token.split(".")
     import base64
 
-    # Decode payload, change sub, re-encode
     padded = parts[1] + "=" * (4 - len(parts[1]) % 4)
     payload_bytes = base64.urlsafe_b64decode(padded)
     tampered = payload_bytes.replace(b'"1"', b'"999"')
@@ -162,51 +169,93 @@ async def test_jwt_tampered_payload(client):
 # --- A07: Refresh token security ---
 
 
+def _refresh_key(raw_token: str) -> str:
+    """Mirror the key scheme in src/auth/tokens.py."""
+    return f"refresh:{hashlib.sha256(raw_token.encode()).hexdigest()}"
+
+
+def _family_key(family_id: str) -> str:
+    return f"family:{family_id}"
+
+
 async def test_refresh_token_rotation(client, db_session, fake_redis):
-    """Old refresh token must be invalidated after rotation."""
+    """Old refresh token must be invalidated after rotation.
+
+    FIXED: field name is "refresh" (not "refresh_token").
+    Storage key is SHA-256(raw_token) per tokens.py — seed accordingly.
+    """
     user = await create_test_user(db_session)
 
-    # Store a refresh token in Redis
-    old_token = "old-refresh-token-123"
-    await fake_redis.set(f"refresh:{old_token}", str(user.id), ex=86400)
+    old_token = "old-refresh-token-xyz-long-enough-32b"
+    token_hash = hashlib.sha256(old_token.encode()).hexdigest()
+    family_id = "test-family-id-rotation"
+    record = json.dumps(
+        {
+            "user_id": str(user.id),
+            "family_id": family_id,
+            "used": False,
+            "exp_unix": int(time.time()) + 86400,
+        }
+    )
+    await fake_redis.set(f"refresh:{token_hash}", record, ex=86400)
+    await fake_redis.sadd(f"family:{family_id}", token_hash)
 
-    # Refresh with old token
     response = await client.post(
         "/auth/refresh",
-        json={"refresh_token": old_token},
+        json={"refresh": old_token},
     )
     assert response.status_code == 200
-    data = response.json()["data"]
-    new_token = data["refresh_token"]
+    data = response.json()
+    new_token = data["refresh"]
 
-    # Old token must be invalid now
-    assert await fake_redis.get(f"refresh:{old_token}") is None
+    # Old token must be marked used
+    raw = await fake_redis.get(f"refresh:{token_hash}")
+    if raw is not None:
+        assert json.loads(raw)["used"] is True
 
-    # New token must be valid
-    assert await fake_redis.get(f"refresh:{new_token}") == str(user.id)
+    # New token must be stored
+    new_hash = hashlib.sha256(new_token.encode()).hexdigest()
+    assert await fake_redis.get(f"refresh:{new_hash}") is not None
 
 
 async def test_logout_invalidates_refresh_token(client, fake_redis):
-    """Logout must delete the refresh token from storage."""
-    token = "active-refresh-token"
-    await fake_redis.set(f"refresh:{token}", "1", ex=86400)
+    """Logout must delete the refresh token from storage.
 
-    response = await client.request(
-        "DELETE",
-        "/auth/logout",
-        json={"refresh_token": token},
+    FIXED: field name is "refresh" (not "refresh_token").
+    Logout is POST /auth/logout and returns 204.
+    """
+    raw_token = "active-refresh-token-xyz-long-enough"
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    family_id = "fam-abc-logout"
+    record = json.dumps(
+        {
+            "user_id": "1",
+            "family_id": family_id,
+            "used": False,
+            "exp_unix": int(time.time()) + 86400,
+        }
     )
-    assert response.status_code == 200
+    await fake_redis.set(f"refresh:{token_hash}", record, ex=86400)
+    await fake_redis.sadd(f"family:{family_id}", token_hash)
 
-    # Token must be removed
-    assert await fake_redis.get(f"refresh:{token}") is None
+    response = await client.post(
+        "/auth/logout",
+        json={"refresh": raw_token},
+    )
+    assert response.status_code == 204
+
+    # Token record must be removed
+    assert await fake_redis.get(f"refresh:{token_hash}") is None
 
 
 async def test_invalid_refresh_token_rejected(client, fake_redis):
-    """Non-existent refresh tokens must be rejected."""
+    """Non-existent refresh tokens must be rejected.
+
+    FIXED: field name is "refresh" (not "refresh_token").
+    """
     response = await client.post(
         "/auth/refresh",
-        json={"refresh_token": "nonexistent-token"},
+        json={"refresh": "nonexistent-token"},
     )
     assert response.status_code == 401
 
@@ -240,9 +289,6 @@ async def test_jwt_default_empty_secret_is_documented():
     """
     from src.lib.auth import JWT_SECRET
 
-    # This test documents the risk. In production, JWT_SECRET must be set.
-    # If JWT_SECRET is the test value, it's been properly overridden.
-    # If it were empty, any attacker could forge valid tokens.
     if JWT_SECRET == "":
         pytest.fail(
             "CRITICAL: JWT_SECRET is empty. "

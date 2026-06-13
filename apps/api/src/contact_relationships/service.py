@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contact_relationships.models import ContactRelationship
-from src.meetings.models import MeetingParticipant
+from src.meetings.models import MeetingAttendee
 
 
 class ContactRelationshipService:
@@ -33,8 +33,8 @@ class ContactRelationshipService:
 
     async def _count_shared_meetings(self, contact_id_1: int, contact_id_2: int) -> int:
         """Count meetings that both contacts participate in."""
-        mp1 = MeetingParticipant.__table__.alias("mp1")
-        mp2 = MeetingParticipant.__table__.alias("mp2")
+        mp1 = MeetingAttendee.__table__.alias("mp1")
+        mp2 = MeetingAttendee.__table__.alias("mp2")
 
         stmt = (
             select(func.count())

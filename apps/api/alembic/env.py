@@ -8,14 +8,17 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from src.lib.database import Base
 
-# Import all models so Alembic can detect them for autogenerate
-from src.auth.models import UserAuth  # noqa: F401
-from src.contacts.models import Contact  # noqa: F401
+# Import all models so Alembic can detect them for autogenerate.
+# FIXED: UserAuth was renamed to User in src/auth/models.py (migration 0006).
+#        src/users/models.py is a re-export shim; importing from the canonical
+#        source avoids duplicate SQLAlchemy mapper registration.
+from src.auth.models import User  # noqa: F401
+from src.contacts.models import Contact, ContactTag  # noqa: F401
+from src.contact_relationships.models import ContactRelationship  # noqa: F401
 from src.experiences.models import Experience  # noqa: F401
 from src.meetings.models import Meeting, MeetingAttendee  # noqa: F401
 from src.organizations.models import Organization  # noqa: F401
-from src.tags.models import ContactTag, Tag  # noqa: F401
-from src.users.models import User  # noqa: F401
+from src.tags.models import Tag  # noqa: F401
 
 config = context.config
 

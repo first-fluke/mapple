@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
+from src.lib.rate_limit import check_data_rate_limit
 from src.tags.schemas import TagCreate, TagOut, TagUpdate
 from src.tags.service import TagService
 
-router = APIRouter(prefix="/tags", tags=["tags"])
+router = APIRouter(prefix="/tags", tags=["tags"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("")

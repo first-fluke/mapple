@@ -25,11 +25,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.oauth import (
     PROVIDER_CONFIG,
     SUPPORTED_PROVIDERS,
+    _apple_credentials_present,
     build_authorization_url,
     compute_code_challenge,
     exchange_code_for_tokens,
     fetch_github_user_info,
     get_client_id,
+    verify_apple_id_token,
     verify_google_id_token,
 )
 from src.auth.schemas import (
@@ -204,8 +206,36 @@ async def oauth_exchange(
     if provider not in SUPPORTED_PROVIDERS and provider != "apple":
         raise HTTPException(status_code=400, detail="Unsupported provider")
     if provider == "apple":
-        # Apple OAuth wiring is task L11.
-        raise HTTPException(status_code=501, detail="Apple sign-in not yet implemented")
+        if not _apple_credentials_present():
+            # TODO(oma-deferred): integrate Apple Sign-In when credentials are provisioned
+            raise HTTPException(
+                status_code=501,
+                detail=(
+                    "Apple Sign-In is not configured on this server. "
+                    "Set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and "
+                    "APPLE_PRIVATE_KEY environment variables to enable it."
+                ),
+            )
+        apple_client_id = os.getenv("APPLE_CLIENT_ID", "")
+        try:
+            claims = await verify_apple_id_token(
+                id_token=body.id_token,
+                client_id=apple_client_id,
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=401, detail=f"Apple id_token verification failed: {exc}") from exc
+        email = claims.get("email")
+        if not email:
+            raise HTTPException(status_code=401, detail="Apple id_token missing email claim")
+        name = claims.get("name", email)
+        image = None
+
+        service = AuthService(db)
+        user = await service.upsert_oauth_user(email=email, name=name, image=image)
+
+        access, exp = issue_access(user.id)
+        refresh, _, _ = await issue_refresh(redis, user.id)
+        return TokenResponse(access=access, refresh=refresh, exp=exp)
 
     if provider == "google":
         try:

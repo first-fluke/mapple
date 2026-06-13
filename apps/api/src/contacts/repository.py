@@ -130,8 +130,11 @@ class ContactRepository:
         name: str | None = None,
         email: str | None = None,
         phone: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
         country: str | None = None,
         city: str | None = None,
+        avatar_url: str | None = None,
         tags: list[str] | None = None,
     ) -> Contact:
         if name is not None:
@@ -140,6 +143,12 @@ class ContactRepository:
             contact.email = email
         if phone is not None:
             contact.phone = phone
+        if latitude is not None:
+            contact.latitude = latitude
+        if longitude is not None:
+            contact.longitude = longitude
+        if avatar_url is not None:
+            contact.avatar_url = avatar_url
         if country is not None:
             contact.country = country
         if city is not None:

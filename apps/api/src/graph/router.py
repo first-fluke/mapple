@@ -7,9 +7,10 @@ from src.graph.service import GraphService
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
+from src.lib.rate_limit import check_data_rate_limit
 from src.lib.redis import get_redis
 
-router = APIRouter(prefix="/graph", tags=["graph"])
+router = APIRouter(prefix="/graph", tags=["graph"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("/edges")

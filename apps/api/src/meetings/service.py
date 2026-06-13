@@ -1,16 +1,34 @@
 import datetime
 
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.contact_relationships.service import ContactRelationshipService
 from src.lib.exceptions import NotFoundException
+from src.lib.redis import redis as default_redis
 from src.meetings.models import Meeting
 from src.meetings.repository import MeetingRepository
 
 
 class MeetingService:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, redis: Redis | None = None) -> None:
         self.session = session
         self.repo = MeetingRepository(session)
+        # Relationship strength is derived from shared meetings; recomputed
+        # whenever a meeting's attendee set changes. Falls back to the global
+        # client for callers (e.g. read endpoints) that do not inject one.
+        self._redis = redis if redis is not None else default_redis
+
+    async def _recompute_relationships(self, user_id: str, contact_ids: list[int]) -> None:
+        """Recompute relationship strength for the affected contacts.
+
+        Safe to call with fewer than two ids (it is a no-op in that case).
+        """
+        unique_ids = sorted({cid for cid in contact_ids if cid is not None})
+        if len(unique_ids) < 2:
+            return
+        rel_service = ContactRelationshipService(self.session, self._redis)
+        await rel_service.recompute_strength_for_contacts(user_id, unique_ids)
 
     async def list_meetings(
         self,
@@ -65,6 +83,7 @@ class MeetingService:
         await self.session.commit()
         await self.session.refresh(meeting)
         ids = await self.repo.get_attendee_contact_ids(meeting.id)
+        await self._recompute_relationships(user_id, ids)
         return _meeting_with_attendees(meeting, ids)
 
     async def update(
@@ -80,6 +99,10 @@ class MeetingService:
         attendee_contact_ids: list[int] | None = None,
     ) -> dict:
         meeting = await self._find_or_raise(meeting_id, user_id)
+        # Capture the prior attendee set so relationships among contacts that
+        # are *removed* from the meeting are also recomputed (their shared
+        # meeting count may drop to zero).
+        prior_ids = await self.repo.get_attendee_contact_ids(meeting.id)
         meeting = await self.repo.update(
             meeting,
             title=title,
@@ -93,12 +116,18 @@ class MeetingService:
         await self.session.commit()
         await self.session.refresh(meeting)
         ids = await self.repo.get_attendee_contact_ids(meeting.id)
+        if attendee_contact_ids is not None:
+            await self._recompute_relationships(user_id, [*prior_ids, *ids])
         return _meeting_with_attendees(meeting, ids)
 
     async def delete(self, *, user_id: str, meeting_id: int) -> None:
         meeting = await self._find_or_raise(meeting_id, user_id)
+        # Capture attendees before deletion so their relationship strength is
+        # recomputed (the meeting_attendee rows cascade-delete with the meeting).
+        prior_ids = await self.repo.get_attendee_contact_ids(meeting.id)
         await self.repo.delete(meeting)
         await self.session.commit()
+        await self._recompute_relationships(user_id, prior_ids)
 
     async def list_by_contact(
         self,

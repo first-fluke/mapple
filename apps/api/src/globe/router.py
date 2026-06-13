@@ -6,8 +6,9 @@ from src.globe.service import GlobeService
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
+from src.lib.rate_limit import check_data_rate_limit
 
-router = APIRouter(prefix="/globe", tags=["globe"])
+router = APIRouter(prefix="/globe", tags=["globe"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("/data")

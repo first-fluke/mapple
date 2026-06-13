@@ -1,12 +1,17 @@
 import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
+
+# E.164-ish pattern: optional leading +, then digits, spaces, hyphens, parens.
+# Allows common formats like +1-800-555-0100 or +82 10 1234 5678.
+_PHONE_PATTERN = r"^\+?[\d\s\-().]{7,30}$"
 
 
 class ContactCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    email: str | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=50)
+    email: Annotated[EmailStr | None, Field(default=None)]
+    phone: str | None = Field(default=None, pattern=_PHONE_PATTERN, max_length=30)
     latitude: float | None = None
     longitude: float | None = None
     country: str | None = Field(default=None, max_length=100)
@@ -23,16 +28,28 @@ class ExperienceInput(BaseModel):
 
 class ContactUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
-    email: str | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=50)
+    email: Annotated[EmailStr | None, Field(default=None)]
+    phone: str | None = Field(default=None, pattern=_PHONE_PATTERN, max_length=30)
     latitude: float | None = None
     longitude: float | None = None
     country: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=255)
+    avatar_url: str | None = Field(default=None, max_length=512)
+
+
+class ContactAvatarPresignOut(BaseModel):
+    """Response for a contact-scoped avatar presign request.
+
+    upload_url is a presigned PUT URL the client uploads the file to;
+    avatar_url is the public URL to persist on the contact afterwards.
+    """
+
+    upload_url: str
+    avatar_url: str
 
 
 class ContactPatch(BaseModel):
-    name: str | None = Field(default=None, max_length=255)
+    name: str | None = Field(default=None, min_length=1, max_length=255)
     tag_ids: list[int] | None = None
 
 
@@ -46,6 +63,7 @@ class ContactOut(BaseModel):
     longitude: float | None
     country: str | None
     city: str | None
+    avatar_url: str | None = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
     tags: list["TagOut"] = []

@@ -1,47 +1,46 @@
+"""Tests for experiences endpoints.
+
+The seed_data fixture uses ORM helpers from conftest so it always inserts into
+whatever table the *current* models define — not a stale raw-SQL table name.
+"""
+
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.conftest import (
+    create_test_contact,
+    create_test_organization,
+    create_test_user,
+    make_auth_headers,
+)
 
 
 @pytest.fixture
 async def seed_data(db_session: AsyncSession):
-    """Insert a test user, contact, and organization for experience tests."""
-    await db_session.execute(
-        text(
-            "INSERT INTO user_auth (id, provider, provider_id, email, name) "
-            "VALUES (:id, :provider, :provider_id, :email, :name)"
-        ),
-        {"id": 1, "provider": "google", "provider_id": "123", "email": "test@example.com", "name": "Test User"},
-    )
-    await db_session.execute(
-        text(
-            "INSERT INTO contact (id, user_id, name, email) "
-            "VALUES (:id, :user_id, :name, :email)"
-        ),
-        {"id": 1, "user_id": 1, "name": "John Doe", "email": "john@example.com"},
-    )
-    await db_session.execute(
-        text(
-            "INSERT INTO organization (id, name, type) "
-            "VALUES (:id, :name, :type)"
-        ),
-        {"id": 1, "name": "Test Org", "type": "company"},
-    )
-    await db_session.commit()
-    return {"user_id": 1, "contact_id": 1, "organization_id": 1}
+    """Insert a test user, contact, and organization for experience tests.
+
+    Decision: FIXED TEST — the original fixture used `user_auth` (old schema).
+    The model now maps User to table "user". We use the ORM helper to stay
+    schema-agnostic and avoid a repeat of this breakage.
+    """
+    user = await create_test_user(db_session)
+    contact = await create_test_contact(db_session, user_id=user.id)
+    org = await create_test_organization(db_session)
+    return {"user_id": user.id, "contact_id": contact.id, "organization_id": org.id}
 
 
 @pytest.mark.asyncio
-async def test_create_experience(client: AsyncClient, auth_headers: dict, seed_data: dict):
+async def test_create_experience(client: AsyncClient, seed_data: dict):
     """Test creating an experience for a contact."""
     contact_id = seed_data["contact_id"]
     org_id = seed_data["organization_id"]
+    auth = make_auth_headers(seed_data["user_id"])
 
     response = await client.post(
         f"/contacts/{contact_id}/experiences",
         json={"organization_id": org_id, "role": "Engineer", "major": "CS"},
-        headers=auth_headers,
+        headers=auth,
     )
     assert response.status_code == 201
     data = response.json()["data"]
@@ -52,46 +51,48 @@ async def test_create_experience(client: AsyncClient, auth_headers: dict, seed_d
 
 
 @pytest.mark.asyncio
-async def test_list_experiences(client: AsyncClient, auth_headers: dict, seed_data: dict):
+async def test_list_experiences(client: AsyncClient, seed_data: dict):
     """Test listing experiences for a contact."""
     contact_id = seed_data["contact_id"]
     org_id = seed_data["organization_id"]
+    auth = make_auth_headers(seed_data["user_id"])
 
     # Create two experiences
     await client.post(
         f"/contacts/{contact_id}/experiences",
         json={"organization_id": org_id, "role": "Manager"},
-        headers=auth_headers,
+        headers=auth,
     )
     await client.post(
         f"/contacts/{contact_id}/experiences",
         json={"organization_id": org_id, "role": "Director"},
-        headers=auth_headers,
+        headers=auth,
     )
 
-    response = await client.get(f"/contacts/{contact_id}/experiences", headers=auth_headers)
+    response = await client.get(f"/contacts/{contact_id}/experiences", headers=auth)
     assert response.status_code == 200
     data = response.json()["data"]
     assert len(data) == 2
 
 
 @pytest.mark.asyncio
-async def test_update_experience(client: AsyncClient, auth_headers: dict, seed_data: dict):
+async def test_update_experience(client: AsyncClient, seed_data: dict):
     """Test updating an experience."""
     contact_id = seed_data["contact_id"]
     org_id = seed_data["organization_id"]
+    auth = make_auth_headers(seed_data["user_id"])
 
     create_resp = await client.post(
         f"/contacts/{contact_id}/experiences",
         json={"organization_id": org_id, "role": "Intern"},
-        headers=auth_headers,
+        headers=auth,
     )
     experience_id = create_resp.json()["data"]["id"]
 
     response = await client.put(
         f"/contacts/{contact_id}/experiences/{experience_id}",
         json={"role": "Senior Engineer"},
-        headers=auth_headers,
+        headers=auth,
     )
     assert response.status_code == 200
     data = response.json()["data"]
@@ -99,25 +100,26 @@ async def test_update_experience(client: AsyncClient, auth_headers: dict, seed_d
 
 
 @pytest.mark.asyncio
-async def test_delete_experience(client: AsyncClient, auth_headers: dict, seed_data: dict):
+async def test_delete_experience(client: AsyncClient, seed_data: dict):
     """Test deleting an experience."""
     contact_id = seed_data["contact_id"]
     org_id = seed_data["organization_id"]
+    auth = make_auth_headers(seed_data["user_id"])
 
     create_resp = await client.post(
         f"/contacts/{contact_id}/experiences",
         json={"organization_id": org_id, "role": "Temp"},
-        headers=auth_headers,
+        headers=auth,
     )
     experience_id = create_resp.json()["data"]["id"]
 
     response = await client.delete(
         f"/contacts/{contact_id}/experiences/{experience_id}",
-        headers=auth_headers,
+        headers=auth,
     )
     assert response.status_code == 204
 
-    list_resp = await client.get(f"/contacts/{contact_id}/experiences", headers=auth_headers)
+    list_resp = await client.get(f"/contacts/{contact_id}/experiences", headers=auth)
     assert all(e["id"] != experience_id for e in list_resp.json()["data"])
 
 
@@ -129,13 +131,14 @@ async def test_experience_requires_auth(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_experience_not_found(client: AsyncClient, auth_headers: dict, seed_data: dict):
+async def test_experience_not_found(client: AsyncClient, seed_data: dict):
     """Test updating a non-existent experience returns 404."""
     contact_id = seed_data["contact_id"]
+    auth = make_auth_headers(seed_data["user_id"])
 
     response = await client.put(
         f"/contacts/{contact_id}/experiences/9999",
         json={"role": "Ghost"},
-        headers=auth_headers,
+        headers=auth,
     )
     assert response.status_code == 404

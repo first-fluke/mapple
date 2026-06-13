@@ -1,8 +1,19 @@
+"""Performance tests — p95 latency under the ASGI transport (in-process).
+
+Decision (cluster — perf): FIXED TEST
+  - test_organizations_search_p95 was calling GET /organizations without auth
+    headers, receiving 401 and asserting status_code == 200. The endpoint
+    is protected; the test must send valid auth headers. Fixed by using
+    make_auth_headers() with a synthetic user_id.
+"""
+
 import time
 from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
+
+from tests.conftest import make_auth_headers
 
 ITERATIONS = 100
 WARMUP = 10
@@ -37,6 +48,9 @@ async def test_health_p95(client: httpx.AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_organizations_search_p95(client: httpx.AsyncClient) -> None:
+    # The organizations endpoint is protected — send valid auth headers.
+    auth = make_auth_headers("perf-test-user-id")
+
     with patch(
         "src.organizations.service.OrganizationService.search",
         new_callable=AsyncMock,
@@ -44,13 +58,13 @@ async def test_organizations_search_p95(client: httpx.AsyncClient) -> None:
     ):
         # Warmup phase
         for _ in range(WARMUP):
-            await client.get("/organizations")
+            await client.get("/organizations", headers=auth)
 
         # Measurement phase
         latencies: list[float] = []
         for _ in range(ITERATIONS):
             start = time.perf_counter()
-            resp = await client.get("/organizations")
+            resp = await client.get("/organizations", headers=auth)
             elapsed_ms = (time.perf_counter() - start) * 1000
             assert resp.status_code == 200
             latencies.append(elapsed_ms)

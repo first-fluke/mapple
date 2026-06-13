@@ -6,8 +6,9 @@ from src.experiences.service import ExperienceService
 from src.lib.auth import get_current_user_id
 from src.lib.database import get_session
 from src.lib.exceptions import ApiResponse
+from src.lib.rate_limit import check_data_rate_limit
 
-router = APIRouter(prefix="/contacts/{contact_id}/experiences", tags=["experiences"])
+router = APIRouter(prefix="/contacts/{contact_id}/experiences", tags=["experiences"], dependencies=[Depends(check_data_rate_limit)])
 
 
 @router.get("")

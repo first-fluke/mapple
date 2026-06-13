@@ -32,13 +32,19 @@ class GlobePinOut(BaseModel):
 
 
 class GlobeArcOut(BaseModel):
+    id: int
     start_lat: float
     start_lng: float
     end_lat: float
     end_lng: float
     type: str
     frequency: int
+    strength: float
     contact_ids: list[str]
+    source_contact_id: int
+    target_contact_id: int
+    source_name: str
+    target_name: str
 
 
 class GlobeDataOut(BaseModel):

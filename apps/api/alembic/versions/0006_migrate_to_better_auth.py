@@ -18,6 +18,27 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # 0. Create contact_relationship if it was not created before this migration.
+    #    This table was added to the codebase between 0005 and 0006 but its
+    #    CREATE TABLE was missing from the migration chain.  Creating it here
+    #    before the ALTER/FK operations below is the minimal repair.
+    op.create_table(
+        "contact_relationship",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("contact_id_1", sa.Integer(), nullable=False),
+        sa.Column("contact_id_2", sa.Integer(), nullable=False),
+        sa.Column("strength", sa.Float(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), nullable=False),
+        sa.ForeignKeyConstraint(["user_id"], ["user_auth.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["contact_id_1"], ["contact.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["contact_id_2"], ["contact.id"], ondelete="CASCADE"),
+        sa.UniqueConstraint("user_id", "contact_id_1", "contact_id_2", name="uq_contact_relationship_pair"),
+        sa.CheckConstraint("contact_id_1 < contact_id_2", name="ck_contact_relationship_ordered"),
+        sa.CheckConstraint("strength > 0", name="ck_contact_relationship_positive_strength"),
+    )
+
     # 1. Create better-auth tables
     op.create_table(
         "user",
@@ -131,11 +152,13 @@ def upgrade() -> None:
     op.create_foreign_key("fk_tag_user_id", "tag", "user", ["user_id"], ["id"], ondelete="CASCADE")
     op.create_unique_constraint("uq_tag_user_name", "tag", ["user_id", "name"])
 
-    # contact_relationship
+    # contact_relationship — drop FK + unique, retype user_id, recreate constraints
+    op.drop_constraint("contact_relationship_user_id_fkey", "contact_relationship", type_="foreignkey")
     op.drop_constraint("uq_contact_relationship_pair", "contact_relationship", type_="unique")
     op.execute(
         "ALTER TABLE contact_relationship ALTER COLUMN user_id TYPE text USING user_id::text"
     )
+    op.create_foreign_key(None, "contact_relationship", "user", ["user_id"], ["id"], ondelete="CASCADE")
     op.create_unique_constraint(
         "uq_contact_relationship_pair",
         "contact_relationship",
@@ -208,3 +231,6 @@ def downgrade() -> None:
     op.drop_table("account")
     op.drop_table("session")
     op.drop_table("user")
+
+    # Drop contact_relationship (was created at the top of this upgrade)
+    op.drop_table("contact_relationship")
