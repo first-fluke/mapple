@@ -41,10 +41,36 @@ export interface Meeting {
   contact_id: number;
   title: string;
   date: string;
+  starts_at: string;
+  ends_at: string;
   location: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MeetingCreateInput {
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  location?: string | null;
+  notes?: string | null;
+}
+
+export interface ExperienceCreateInput {
+  organization_id: number;
+  role?: string | null;
+  major?: string | null;
+}
+
+export interface ExperienceUpdateInput {
+  role?: string | null;
+  major?: string | null;
+}
+
+export interface AvatarPresignResponse {
+  upload_url: string;
+  avatar_url: string;
 }
 
 export interface Tag {
@@ -105,6 +131,30 @@ export const contactsApi = {
     return api.get<Meeting[]>(`/contacts/${contactId}/meetings`);
   },
 
+  createMeeting(contactId: number, data: MeetingCreateInput) {
+    return api.post<Meeting>(`/contacts/${contactId}/meetings`, data);
+  },
+
+  updateMeeting(contactId: number, meetingId: number, data: Partial<MeetingCreateInput>) {
+    return api.patch<Meeting>(`/contacts/${contactId}/meetings/${meetingId}`, data);
+  },
+
+  deleteMeeting(contactId: number, meetingId: number) {
+    return api.delete<void>(`/contacts/${contactId}/meetings/${meetingId}`);
+  },
+
+  createExperience(contactId: number, data: ExperienceCreateInput) {
+    return api.post<Experience>(`/contacts/${contactId}/experiences`, data);
+  },
+
+  updateExperience(contactId: number, experienceId: number, data: ExperienceUpdateInput) {
+    return api.patch<Experience>(`/contacts/${contactId}/experiences/${experienceId}`, data);
+  },
+
+  deleteExperience(contactId: number, experienceId: number) {
+    return api.delete<void>(`/contacts/${contactId}/experiences/${experienceId}`);
+  },
+
   getTags(contactId: number) {
     return api.get<Tag[]>(`/contacts/${contactId}/tags`);
   },
@@ -115,5 +165,13 @@ export const contactsApi = {
 
   removeTag(contactId: number, tagId: number) {
     return api.delete<void>(`/contacts/${contactId}/tags/${tagId}`);
+  },
+
+  getAvatarPresignUrl(contactId: number) {
+    return api.post<AvatarPresignResponse>(`/contacts/${contactId}/avatar/presign`, {});
+  },
+
+  confirmAvatar(contactId: number, avatarUrl: string) {
+    return api.patch<Contact>(`/contacts/${contactId}`, { avatar_url: avatarUrl });
   },
 };

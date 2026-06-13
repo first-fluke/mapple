@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AxeDev } from '@/components/axe-dev';
+import { ThemeScript } from '@/components/theme-script';
 import { Providers } from '@/providers';
 import './globals.css';
 
@@ -25,7 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="font-sans antialiased">
         <Providers>
           {process.env.NODE_ENV === 'development' && <AxeDev />}

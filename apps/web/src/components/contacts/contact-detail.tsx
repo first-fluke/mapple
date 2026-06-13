@@ -1,27 +1,33 @@
 'use client';
 
-import { ArrowLeft, Globe, Loader2, Network } from 'lucide-react';
+import { ArrowLeft, Globe, Loader2, Network, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContact, useExperiences, useMeetings, useTags } from '@/hooks/use-contact';
+import { useTranslations } from '@/hooks/use-translations';
 import { ContactMeetings } from './contact-meetings';
 import { ContactProfile } from './contact-profile';
 import { ContactTags } from './contact-tags';
 import { ContactTimeline } from './contact-timeline';
+import { MeetingFormDialog } from './meeting-form-dialog';
 
 export function ContactDetail({ contactId }: { contactId: number }) {
   const { data: contact, isLoading, error } = useContact(contactId);
   const { data: experiences = [] } = useExperiences(contactId);
   const { data: meetings = [] } = useMeetings(contactId);
   const { data: tags = [] } = useTags(contactId);
+  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const d = useTranslations();
 
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">{d.contacts.detail.loading}</span>
       </div>
     );
   }
@@ -29,9 +35,9 @@ export function ContactDetail({ contactId }: { contactId: number }) {
   if (error || !contact) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Contact not found.</p>
+        <p className="text-muted-foreground">{d.contacts.detail.notFound}</p>
         <Button variant="outline" render={<Link href="/contacts" />}>
-          Back to Contacts
+          {d.contacts.detail.backToList}
         </Button>
       </div>
     );
@@ -41,18 +47,18 @@ export function ContactDetail({ contactId }: { contactId: number }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" render={<Link href="/contacts" />} className="gap-1">
-          <ArrowLeft className="size-4" />
-          Back
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          {d.contacts.detail.back}
         </Button>
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1">
-            <Globe className="size-4" />
-            Globe View
+            <Globe className="size-4" aria-hidden="true" />
+            {d.contacts.detail.globeView}
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
-            <Network className="size-4" />
-            Relationship View
+            <Network className="size-4" aria-hidden="true" />
+            {d.contacts.detail.networkView}
           </Button>
         </div>
       </div>
@@ -67,29 +73,40 @@ export function ContactDetail({ contactId }: { contactId: number }) {
 
       <Tabs defaultValue="timeline">
         <TabsList>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="meetings">Meetings</TabsTrigger>
-          <TabsTrigger value="tags">Tags</TabsTrigger>
+          <TabsTrigger value="timeline">{d.contacts.detail.tabs.timeline}</TabsTrigger>
+          <TabsTrigger value="meetings">{d.contacts.detail.tabs.meetings}</TabsTrigger>
+          <TabsTrigger value="tags">{d.contacts.detail.tabs.tags}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Career Timeline</CardTitle>
+              <CardTitle className="text-lg">{d.contacts.detail.timelineTitle}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContactTimeline experiences={experiences} />
+              <ContactTimeline contactId={contactId} experiences={experiences} />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="meetings" className="mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Meetings</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg">{d.contacts.detail.meetingsTitle}</CardTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                aria-label={d.contacts.detail.addMeetingLabel}
+                onClick={() => setMeetingDialogOpen(true)}
+              >
+                <Plus className="size-3.5" aria-hidden="true" />
+                {d.contacts.detail.addButton}
+              </Button>
             </CardHeader>
             <CardContent>
-              <ContactMeetings meetings={meetings} />
+              <ContactMeetings contactId={contactId} meetings={meetings} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -97,14 +114,16 @@ export function ContactDetail({ contactId }: { contactId: number }) {
         <TabsContent value="tags" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Tags</CardTitle>
+              <CardTitle className="text-lg">{d.contacts.detail.tagsTitle}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContactTags tags={tags} />
+              <ContactTags contactId={contactId} tags={tags} />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <MeetingFormDialog contactId={contactId} open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} />
     </div>
   );
 }

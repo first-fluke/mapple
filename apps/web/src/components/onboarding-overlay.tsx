@@ -4,11 +4,13 @@ import { useAtom } from 'jotai';
 import { Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/use-translations';
 import { onboardingCompletedAtom } from '@/lib/atoms/onboarding';
 
 export function OnboardingOverlay() {
   const [, setCompleted] = useAtom(onboardingCompletedAtom);
   const router = useRouter();
+  const t = useTranslations();
 
   function handleGetStarted() {
     setCompleted(true);
@@ -24,14 +26,12 @@ export function OnboardingOverlay() {
       </div>
 
       <div className="flex max-w-md flex-col gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome to Globe CRM</h1>
-        <p className="text-muted-foreground">
-          Your globe is empty. Add your first contact to start mapping your relationships across the world.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.globe.onboarding.title}</h1>
+        <p className="text-muted-foreground">{t.globe.onboarding.description}</p>
       </div>
 
       <Button size="lg" onClick={handleGetStarted}>
-        Add your first contact
+        {t.globe.onboarding.getStarted}
       </Button>
     </div>
   );

@@ -1,5 +1,6 @@
 import { AppNav } from '@/components/app-nav';
 import { SkipLink } from '@/components/skip-link';
+import { Toaster } from '@/components/toaster';
 
 export default function MainLayout({
   children,
@@ -13,6 +14,7 @@ export default function MainLayout({
       <main id="main-content" className="flex-1 overflow-y-auto p-4 pb-20 md:pb-4" tabIndex={-1}>
         {children}
       </main>
+      <Toaster />
     </div>
   );
 }

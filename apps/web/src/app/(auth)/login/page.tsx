@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from '@/hooks/use-translations';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -38,6 +39,8 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
+  const d = useTranslations();
+
   const handleLogin = (provider: 'google' | 'github') => {
     if (typeof window === 'undefined') return;
     window.location.href = `${API_BASE_URL}/auth/login/${provider}?return_to=/`;
@@ -46,28 +49,27 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Globe CRM</CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
+        <CardTitle className="text-2xl">{d.auth.loginTitle}</CardTitle>
+        <CardDescription>{d.auth.loginDescription}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Button variant="outline" size="lg" className="w-full gap-2" onClick={() => handleLogin('google')}>
           <GoogleIcon />
-          Continue with Google
+          {d.auth.continueWithGoogle}
         </Button>
         <Button variant="outline" size="lg" className="w-full gap-2" onClick={() => handleLogin('github')}>
           <GitHubIcon />
-          Continue with GitHub
+          {d.auth.continueWithGitHub}
         </Button>
         <p className="text-center text-xs text-muted-foreground">
-          로그인 시{' '}
+          {d.auth.termsAgreement}{' '}
           <Link href="/legal/terms" className="underline underline-offset-2 hover:text-foreground">
-            이용약관
-          </Link>
-          과{' '}
+            {d.auth.termsLink}
+          </Link>{' '}
           <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-foreground">
-            개인정보처리방침
+            {d.auth.privacyLink}
           </Link>
-          에 동의하는 것으로 간주됩니다.
+          {d.auth.termsAgreementSuffix}
         </p>
       </CardContent>
     </Card>

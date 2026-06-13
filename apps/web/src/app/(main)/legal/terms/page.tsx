@@ -1,54 +1,41 @@
-export const metadata = {
-  title: 'Globe CRM 이용약관',
-};
+import type { Metadata } from 'next';
+import { getLegalContent } from '@/lib/i18n/legal';
+import { getServerLocale } from '@/lib/i18n/server';
 
-export default function TermsPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  const content = getLegalContent(locale, 'terms');
+  return { title: `Globe CRM ${content.title}` };
+}
+
+export default async function TermsPage() {
+  const locale = await getServerLocale();
+  const content = getLegalContent(locale, 'terms');
+
   return (
     <article className="prose mx-auto max-w-3xl px-4 py-12">
-      <h1>이용약관</h1>
-      <p className="text-muted-foreground">최종 수정일: 2026-05-03</p>
-
-      <p>
-        본 약관 초안은 Globe CRM v1 출시를 위한 임시 본문이며, 정식 서비스 개시 전 법무 검토를 거쳐 갱신될 예정입니다.
+      <h1>{content.title}</h1>
+      <p className="text-muted-foreground">
+        {content.lastUpdatedLabel} {content.lastUpdated}
       </p>
 
-      <h2>1. 서비스 개요</h2>
-      <p>
-        Globe CRM(이하 &quot;서비스&quot;)는 사용자가 본인의 인적 네트워크를 시각화하고 관리할 수 있도록 돕는
-        소프트웨어입니다.
-      </p>
+      <p>{content.intro}</p>
 
-      <h2>2. 계정</h2>
-      <p>
-        서비스 이용을 위해서는 Google 또는 GitHub 계정을 통한 OAuth 로그인이 필요합니다. 사용자는 제공한 계정 정보의
-        정확성을 유지할 책임이 있습니다.
-      </p>
-
-      <h2>3. 사용자 콘텐츠</h2>
-      <p>
-        사용자가 등록한 컨택트, 미팅, 조직, 경력 정보는 사용자에게 귀속되며 운영자는 서비스 제공 목적으로만 처리합니다.
-      </p>
-
-      <h2>4. 금지 행위</h2>
-      <ul>
-        <li>타인의 권리를 침해하는 정보 등록</li>
-        <li>역공학, 자동화된 대량 수집</li>
-        <li>서비스의 정상 운영을 방해하는 행위</li>
-      </ul>
-
-      <h2>5. 책임 제한</h2>
-      <p>
-        서비스는 현 상태(&quot;as is&quot;)로 제공되며, 운영자는 서비스 중단, 데이터 손실 등에 대한 묵시적 보증을 하지
-        않습니다. 단, 운영자의 고의 또는 중과실로 인한 손해는 본 항의 제한을 받지 않습니다.
-      </p>
-
-      <h2>6. 약관 변경</h2>
-      <p>
-        본 약관은 사전 공지 후 변경될 수 있으며, 변경된 약관에 동의하지 않는 사용자는 계정 삭제를 요청할 수 있습니다.
-      </p>
-
-      <h2>7. 문의</h2>
-      <p>본 약관 관련 문의는 운영자에게 이메일로 연락해 주십시오.</p>
+      {content.sections.map((section) => (
+        <section key={section.heading}>
+          <h2>{section.heading}</h2>
+          {section.paragraphs?.map((para) => (
+            <p key={para}>{para}</p>
+          ))}
+          {section.items && (
+            <ul>
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
     </article>
   );
 }
