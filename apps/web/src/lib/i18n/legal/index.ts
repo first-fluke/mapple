@@ -9,13 +9,13 @@ export type { LegalDoc, LegalDocName, LegalSection } from './types';
 
 /**
  * Returns the structured legal document content for the given locale and doc name.
- * Falls back to Korean when the locale is not explicitly supported.
+ * Falls back to English when the locale is not explicitly supported.
  */
 export function getLegalContent(locale: Locale | string, doc: LegalDocName): LegalDoc {
   switch (doc) {
     case 'privacy':
-      return locale === 'en' ? privacyEn : privacyKo;
+      return locale === 'ko' ? privacyKo : privacyEn;
     case 'terms':
-      return locale === 'en' ? termsEn : termsKo;
+      return locale === 'ko' ? termsKo : termsEn;
   }
 }

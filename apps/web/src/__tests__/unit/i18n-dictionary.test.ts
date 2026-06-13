@@ -110,12 +110,12 @@ describe('getDictionary', () => {
     expect(getDictionary('en')).toBe(en);
   });
 
-  it('falls back to ko for unknown locale', () => {
-    expect(getDictionary('fr')).toBe(ko);
-    expect(getDictionary('')).toBe(ko);
+  it('falls back to en for unknown locale', () => {
+    expect(getDictionary('fr')).toBe(en);
+    expect(getDictionary('')).toBe(en);
   });
 
-  it('getDefaultDictionary returns ko', () => {
-    expect(getDefaultDictionary()).toBe(ko);
+  it('getDefaultDictionary returns en', () => {
+    expect(getDefaultDictionary()).toBe(en);
   });
 });

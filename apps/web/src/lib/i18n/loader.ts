@@ -6,22 +6,22 @@ import { DEFAULT_LOCALE } from './types';
 
 /**
  * Returns the message dictionary for the given locale.
- * Falls back to DEFAULT_LOCALE (ko) when the locale is unknown.
+ * Falls back to DEFAULT_LOCALE (en) when the locale is unknown.
  */
 export function getDictionary(locale: Locale | string): Messages {
   switch (locale) {
-    case 'en':
-      return en;
-    default:
+    case 'ko':
       return ko;
+    default:
+      return en;
   }
 }
 
 /**
- * Returns the default (ko) dictionary — safe to call anywhere including tests.
+ * Returns the default (en) dictionary — safe to call anywhere including tests.
  */
 export function getDefaultDictionary(): Messages {
-  return ko;
+  return en;
 }
 
 export type { Messages };
