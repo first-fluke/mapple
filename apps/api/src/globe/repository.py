@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import noload
 
 from src.contact_relationships.models import ContactRelationship
 from src.contacts.models import Contact
@@ -30,6 +31,9 @@ class GlobeRepository:
     ) -> list[Contact]:
         stmt = (
             select(Contact)
+            # Globe pins don't render tags; skip the relationship load so this
+            # path stays decoupled from the contact_tag schema.
+            .options(noload(Contact.tags))
             .where(
                 Contact.user_id == user_id,
                 Contact.latitude.is_not(None),

@@ -2,7 +2,7 @@ import os
 
 from miniopy_async import Minio  # type: ignore[attr-defined]
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:11900")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "true"
 
 ENV = os.getenv("ENV", "dev")

@@ -86,7 +86,10 @@ class ImportService:
                     name=import_row.name,
                     email=import_row.email,
                     phone=import_row.phone,
-                    tags=import_row.tags if import_row.tags else None,
+                    # CSV import uses tag names only; tag association by ID is not
+                    # supported in the import flow (tags must be created first via
+                    # the /tags endpoint to obtain their IDs).
+                    tag_ids=None,
                 )
                 results.append(ImportRowResult(row=row_num, status="created"))
                 created_count += 1
