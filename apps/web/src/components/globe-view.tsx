@@ -8,7 +8,6 @@ import { GlobeEmptyState } from '@/components/globe/globe-empty-state';
 import { GlobeErrorBoundary } from '@/components/globe/globe-error-boundary';
 import { GlobeSkeleton } from '@/components/globe/globe-skeleton';
 import { useNavigateToGraph } from '@/hooks/use-cross-navigation';
-import { useGlobeArcs } from '@/hooks/use-globe-arcs';
 import { useGlobeData } from '@/hooks/use-globe-data';
 import { useTranslations } from '@/hooks/use-translations';
 import type { GlobePin as ApiGlobePin } from '@/lib/api/globe';
@@ -31,8 +30,9 @@ export function GlobeView() {
   const d = useTranslations();
 
   // ── Data ─────────────────────────────────────────────────────────────────
+  // /globe/data returns pins AND relationship arcs in one authenticated call.
   const { data: globeData, isLoading, isError } = useGlobeData();
-  const { data: arcs = [] } = useGlobeArcs(!isLoading);
+  const arcs = globeData?.arcs ?? [];
 
   const pins: ApiGlobePin[] = globeData?.pins ?? [];
   const hasLocatedContacts = pins.length > 0;

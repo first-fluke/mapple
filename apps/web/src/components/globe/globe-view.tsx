@@ -1,7 +1,7 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactGlobe, { type GlobeMethods } from 'react-globe.gl';
 import { type CameraPosition, cameraAtom } from '@/atoms/camera';
 import { useTranslations } from '@/hooks/use-translations';
@@ -19,6 +19,27 @@ const ATMOSPHERE_COLOR = '#d97706';
 const ARC_COLORS = ['#f97316', '#0d9488', '#d97706', '#6366f1', '#e11d48'] as const;
 /** Coral for pins */
 const PIN_COLOR = '#f97316';
+
+/**
+ * Warm-earth hex-polygon colors (Terrazzo palette, no cold blue).
+ * Land hexes alternate between Warm Stone and Soft Stone tones for depth.
+ */
+const HEX_COLORS = ['#78716c', '#a8a29e', '#6b6560', '#928d89'] as const;
+
+/**
+ * World-countries GeoJSON served from unpkg (same CDN tree as three-globe
+ * examples — the file is the Natural Earth 110m admin-0 dataset).
+ */
+const COUNTRIES_GEOJSON_URL = '//unpkg.com/three-globe/example/hexed-polygons/ne_110m_admin_0_countries.geojson';
+
+/**
+ * Dark-Earth color as a packed 24-bit integer (Three.js Color.set() format).
+ * Applied to the globe sphere mesh material in onGlobeReady without importing
+ * the 'three' package directly (avoiding TS7016 — three ships no bundled .d.ts).
+ *
+ * #1c1917 = R:0x1c G:0x19 B:0x17 = 0x1c1917 = 1842455
+ */
+const GLOBE_SPHERE_COLOR_HEX = 0x1c1917;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +160,36 @@ export function GlobeView({
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dict = useTranslations();
 
+  // ── World GeoJSON for warm hex-polygon earth surface ─────────────────────
+  // Loaded client-side only (this component is rendered via next/dynamic ssr:false).
+  const [countryFeatures, setCountryFeatures] = useState<object[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`https:${COUNTRIES_GEOJSON_URL}`)
+      .then((res) => res.json())
+      .then((data: { features: object[] }) => {
+        if (!cancelled) setCountryFeatures(data.features);
+      })
+      .catch(() => {
+        // Non-fatal: globe still renders with the dark-earth base material
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Stable hex-polygon color accessor — deterministic warm stone color per country.
+  // Uses the ADM0_A3 three-letter code to index into the palette; falls back to
+  // the first swatch when the property is absent.
+  const hexPolygonColorFn = useCallback((d: object) => {
+    const feature = d as { properties?: { ADM0_A3?: string } };
+    const code = feature.properties?.ADM0_A3 ?? '';
+    // Sum char-codes of the 3-letter code for a cheap but stable hash
+    const hash = code.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return HEX_COLORS[hash % HEX_COLORS.length] as string;
+  }, []);
+
   // ── Stable arc data (avoid identity churn) ────────────────────────────────
   const arcData = useMemo(() => arcs, [arcs]);
   const pinData = useMemo(() => pins, [pins]);
@@ -159,6 +210,25 @@ export function GlobeView({
     controls.maxDistance = 600;
     controls.autoRotate = autoRotate;
     controls.autoRotateSpeed = 0.4;
+
+    // ── Apply warm dark-earth color to the globe sphere mesh ─────────────
+    // three.js ships no bundled .d.ts (v0.184+), so we avoid importing it
+    // directly and instead duck-type the scene graph at runtime.
+    // The globe sphere is the first Mesh encountered in scene traversal;
+    // its material exposes `color.setHex()` from three's Color class.
+    globeRef.current.scene().traverse((obj: unknown) => {
+      const mesh = obj as {
+        isMesh?: boolean;
+        material?: { color?: { setHex: (hex: number) => void }; needsUpdate?: boolean };
+        name?: string;
+      };
+      if (mesh.isMesh && mesh.name === 'globe' && mesh.material?.color) {
+        mesh.material.color.setHex(GLOBE_SPHERE_COLOR_HEX);
+        if (mesh.material.needsUpdate !== undefined) {
+          mesh.material.needsUpdate = true;
+        }
+      }
+    });
   }, [camera, autoRotate]);
 
   // ── Pause auto-rotate on pointer interaction; resume after 3s idle ────────
@@ -264,13 +334,21 @@ export function GlobeView({
           ref={globeRef}
           width={width}
           height={height}
-          // ── Globe appearance (warm earth, no cold blue NASA texture) ──────
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-          bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+          // ── Globe appearance — warm dark earth, NO cold blue NASA texture ─
+          // globeImageUrl=null clears any texture; the sphere colour is set
+          // imperatively in onGlobeReady (see handleGlobeReady) to avoid
+          // importing 'three' directly (it ships no bundled .d.ts in v0.184+).
+          globeImageUrl={null}
           backgroundColor={BG_COLOR}
           showAtmosphere={true}
           atmosphereColor={ATMOSPHERE_COLOR}
           atmosphereAltitude={0.18}
+          // ── Warm hex-polygon land masses ──────────────────────────────────
+          hexPolygonsData={countryFeatures}
+          hexPolygonResolution={3}
+          hexPolygonMargin={0.4}
+          hexPolygonColor={hexPolygonColorFn}
+          hexPolygonsTransitionDuration={800}
           // ── Pins ──────────────────────────────────────────────────────────
           htmlElementsData={pinData}
           htmlLat="lat"

@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/auth/api-client';
 import type { ApiResponse, ErrorResponse } from './types';
 
 export class ApiError extends Error {
@@ -11,8 +12,6 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = '/api/proxy';
-
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   if (response.status === 401) {
     window.location.href = '/login';
@@ -25,52 +24,45 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   return response.json() as Promise<ApiResponse<T>>;
 }
 
+// All data calls go through apiFetch, which targets NEXT_PUBLIC_API_URL directly
+// and attaches the Bearer access token (with refresh-on-401). The Next.js
+// `/api/proxy` rewrite is a dumb passthrough that cannot forward the in-memory
+// access token, so it must NOT be used for authenticated endpoints.
 export const api = {
   async get<T>(path: string, init?: RequestInit): Promise<ApiResponse<T>> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...init,
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
-    });
+    const response = await apiFetch(path, { ...init, method: 'GET' });
     return handleResponse<T>(response);
   },
 
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<ApiResponse<T>> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await apiFetch(path, {
       ...init,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
       body: body != null ? JSON.stringify(body) : undefined,
     });
     return handleResponse<T>(response);
   },
 
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<ApiResponse<T>> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await apiFetch(path, {
       ...init,
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
       body: body != null ? JSON.stringify(body) : undefined,
     });
     return handleResponse<T>(response);
   },
 
   async patch<T>(path: string, body?: unknown, init?: RequestInit): Promise<ApiResponse<T>> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await apiFetch(path, {
       ...init,
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
       body: body != null ? JSON.stringify(body) : undefined,
     });
     return handleResponse<T>(response);
   },
 
   async delete<T>(path: string, init?: RequestInit): Promise<ApiResponse<T>> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...init,
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
-    });
+    const response = await apiFetch(path, { ...init, method: 'DELETE' });
     return handleResponse<T>(response);
   },
 };

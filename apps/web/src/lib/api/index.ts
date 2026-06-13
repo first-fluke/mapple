@@ -8,5 +8,5 @@ export type {
   Tag,
 } from './contacts';
 export { contactsApi } from './contacts';
-export type { GlobeArc, GlobeData, GlobePin } from './globe';
+export type { GlobeArcItem, GlobeData, GlobePin } from './globe';
 export type { ApiResponse, CursorMeta, ErrorDetail, ErrorResponse, PaginationMeta } from './types';
