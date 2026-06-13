@@ -1,10 +1,11 @@
 import datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy import func as sa_func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import Contact, ContactTag
+from src.tags.models import Tag
 
 
 class ContactRepository:
@@ -13,6 +14,18 @@ class ContactRepository:
 
     def _not_deleted(self):
         return Contact.deleted_at.is_(None)
+
+    async def _resolve_tags(self, user_id: str, tag_ids: list[int]) -> list[Tag]:
+        """Return Tag objects that belong to the given user and match the given ids.
+
+        Unknown or foreign tag_ids are silently ignored — only the user's own tags
+        are associated.
+        """
+        if not tag_ids:
+            return []
+        stmt = select(Tag).where(Tag.id.in_(tag_ids), Tag.user_id == user_id)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
 
     async def find_paginated(
         self,
@@ -34,9 +47,12 @@ class ContactRepository:
         if city:
             stmt = stmt.where(Contact.city == city)
         if tag:
+            # Filter by tag name: join contact_tag → tag and match by name.
             stmt = stmt.where(
                 Contact.id.in_(
-                    select(ContactTag.contact_id).where(ContactTag.name == tag)
+                    select(ContactTag.contact_id)
+                    .join(Tag, Tag.id == ContactTag.tag_id)
+                    .where(Tag.user_id == user_id, Tag.name == tag)
                 )
             )
         if cursor:
@@ -82,7 +98,9 @@ class ContactRepository:
         if tag:
             stmt = stmt.where(
                 Contact.id.in_(
-                    select(ContactTag.contact_id).where(ContactTag.name == tag)
+                    select(ContactTag.contact_id)
+                    .join(Tag, Tag.id == ContactTag.tag_id)
+                    .where(Tag.user_id == user_id, Tag.name == tag)
                 )
             )
         result = await self.session.execute(stmt)
@@ -106,7 +124,7 @@ class ContactRepository:
         phone: str | None,
         country: str | None = None,
         city: str | None = None,
-        tags: list[str] | None = None,
+        tag_ids: list[int] | None = None,
     ) -> Contact:
         contact = Contact(
             user_id=user_id,
@@ -116,8 +134,8 @@ class ContactRepository:
             country=country,
             city=city,
         )
-        if tags:
-            contact.tags = [ContactTag(name=t) for t in tags]
+        if tag_ids:
+            contact.tags = await self._resolve_tags(user_id, tag_ids)
         self.session.add(contact)
         await self.session.commit()
         await self.session.refresh(contact)
@@ -127,6 +145,7 @@ class ContactRepository:
         self,
         contact: Contact,
         *,
+        user_id: str,
         name: str | None = None,
         email: str | None = None,
         phone: str | None = None,
@@ -135,7 +154,7 @@ class ContactRepository:
         country: str | None = None,
         city: str | None = None,
         avatar_url: str | None = None,
-        tags: list[str] | None = None,
+        tag_ids: list[int] | None = None,
     ) -> Contact:
         if name is not None:
             contact.name = name
@@ -153,11 +172,8 @@ class ContactRepository:
             contact.country = country
         if city is not None:
             contact.city = city
-        if tags is not None:
-            await self.session.execute(
-                delete(ContactTag).where(ContactTag.contact_id == contact.id)
-            )
-            contact.tags = [ContactTag(name=t) for t in tags]
+        if tag_ids is not None:
+            contact.tags = await self._resolve_tags(user_id, tag_ids)
         await self.session.commit()
         await self.session.refresh(contact)
         return contact

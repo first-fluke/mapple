@@ -48,7 +48,7 @@ class ContactService:
         phone: str | None,
         country: str | None = None,
         city: str | None = None,
-        tags: list[str] | None = None,
+        tag_ids: list[int] | None = None,
     ) -> Contact:
         return await self.repo.create(
             user_id=user_id,
@@ -57,7 +57,7 @@ class ContactService:
             phone=phone,
             country=country,
             city=city,
-            tags=tags,
+            tag_ids=tag_ids,
         )
 
     async def update(
@@ -73,13 +73,14 @@ class ContactService:
         country: str | None = None,
         city: str | None = None,
         avatar_url: str | None = None,
-        tags: list[str] | None = None,
+        tag_ids: list[int] | None = None,
     ) -> Contact:
         contact = await self.repo.find_by_id(contact_id, user_id)
         if not contact:
             raise NotFoundException(message=f"Contact {contact_id} not found")
         return await self.repo.update(
             contact,
+            user_id=user_id,
             name=name,
             email=email,
             phone=phone,
@@ -88,7 +89,7 @@ class ContactService:
             country=country,
             city=city,
             avatar_url=avatar_url,
-            tags=tags,
+            tag_ids=tag_ids,
         )
 
     async def delete(self, *, user_id: str, contact_id: int) -> None:

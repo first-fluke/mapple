@@ -35,6 +35,7 @@ class ContactUpdate(BaseModel):
     country: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=255)
     avatar_url: str | None = Field(default=None, max_length=512)
+    tag_ids: list[int] | None = None
 
 
 class ContactAvatarPresignOut(BaseModel):

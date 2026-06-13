@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from src.auth.models import User
 from src.contacts.models import Contact
 from src.experiences.models import Experience
+from src.tags.models import Tag
 from src.lib.auth import (
     JWT_ALGORITHM,
     JWT_AUDIENCE,
@@ -152,6 +153,25 @@ async def create_test_organization(
     return org
 
 
+async def create_test_tag(
+    session: AsyncSession,
+    *,
+    user_id: str,
+    name: str = "test-tag",
+    color: str = "#6366f1",
+) -> Tag:
+    """Create a Tag row owned by the given user."""
+    tag = Tag(
+        user_id=user_id,
+        name=name,
+        color=color,
+    )
+    session.add(tag)
+    await session.commit()
+    await session.refresh(tag)
+    return tag
+
+
 async def create_test_experience(
     session: AsyncSession,
     *,
@@ -186,6 +206,7 @@ async def setup_database():
     import src.meetings.models  # noqa: F401
     import src.notifications.models  # noqa: F401
     import src.organizations.models  # noqa: F401
+    import src.tags.models  # noqa: F401
 
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)

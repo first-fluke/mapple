@@ -1,5 +1,6 @@
 import datetime
 
+import sqlalchemy as sa
 from sqlalchemy import ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -15,7 +16,10 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(Text, ForeignKey("user.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(100))
-    color: Mapped[str] = mapped_column(String(7), server_default="'#6366f1'")
+    # sa.text() emits the SQL string literal '#6366f1' (7 chars) as the server default,
+    # not the Python-string double-quoted form "'#6366f1'" which PostgreSQL stores as
+    # 9 chars and truncates on insert into varchar(7).
+    color: Mapped[str] = mapped_column(String(7), server_default=sa.text("'#6366f1'"))
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),

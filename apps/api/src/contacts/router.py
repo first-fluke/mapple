@@ -77,7 +77,7 @@ async def create_contact(
         phone=body.phone,
         country=body.country,
         city=body.city,
-        tags=body.tags,
+        tag_ids=body.tag_ids or None,
     )
     return ApiResponse(data=ContactOut.model_validate(contact))
 
@@ -99,7 +99,7 @@ async def update_contact(
         phone=body.phone,
         country=body.country,
         city=body.city,
-        tags=body.tags,
+        tag_ids=body.tag_ids,
     )
     return ApiResponse(data=ContactOut.model_validate(contact))
 
