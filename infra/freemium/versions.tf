@@ -18,5 +18,9 @@ terraform {
       source  = "Backblaze/b2"
       version = "~> 0.8"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.0"
+    }
   }
 }

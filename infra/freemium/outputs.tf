@@ -32,3 +32,13 @@ output "fly_secrets" {
   description = "Map of secrets to set on the Fly.io api app"
   sensitive   = true
 }
+
+output "web_hostname" {
+  value       = module.cloudflare_dns.web_record_hostname
+  description = "Public hostname for the web app (Cloudflare DNS, e.g. app.example.com)"
+}
+
+output "api_hostname" {
+  value       = module.cloudflare_dns.api_record_hostname
+  description = "Public hostname for the API (Cloudflare DNS, e.g. api.example.com)"
+}

@@ -13,3 +13,8 @@ provider "upstash" {
 provider "b2" {
   # B2_APPLICATION_KEY_ID + B2_APPLICATION_KEY env vars
 }
+
+provider "cloudflare" {
+  # CLOUDFLARE_API_TOKEN env var
+  # Token requires: Zone:Read + DNS:Edit scopes on the target zone.
+}
