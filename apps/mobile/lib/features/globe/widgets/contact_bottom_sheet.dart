@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
+
 class ContactBottomSheet extends StatelessWidget {
   final String contactId;
   final String? contactName;
@@ -41,6 +43,10 @@ class ContactBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
+    final initials = contactName?.isNotEmpty == true
+        ? contactName![0].toUpperCase()
+        : '?';
 
     return SafeArea(
       child: Padding(
@@ -62,14 +68,13 @@ class ContactBottomSheet extends StatelessWidget {
             const SizedBox(height: 24),
             Row(
               children: [
-                FAvatar(
-                  size: 56,
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: theme.colorScheme.secondary,
                   child: Text(
-                    contactName?.isNotEmpty == true
-                        ? contactName![0].toUpperCase()
-                        : '?',
+                    initials,
                     style: theme.typography.xl.copyWith(
-                      color: theme.colorScheme.foreground,
+                      color: theme.colorScheme.secondaryForeground,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -102,7 +107,7 @@ class ContactBottomSheet extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FButton(
-                label: const Text('View Profile'),
+                label: Text(l10n.globeViewProfile),
                 onPress: () {
                   Navigator.of(context).pop();
                   context.push('/contacts/$contactId');

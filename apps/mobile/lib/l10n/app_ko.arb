@@ -1,0 +1,293 @@
+{
+  "@@locale": "ko",
+
+  "appTitle": "Globe CRM",
+  "@appTitle": { "description": "Application title" },
+
+  "navGlobe": "Globe",
+  "@navGlobe": { "description": "Bottom navigation tab: globe" },
+
+  "navGraph": "Graph",
+  "@navGraph": { "description": "Bottom navigation tab: graph" },
+
+  "navContacts": "연락처",
+  "@navContacts": { "description": "Bottom navigation tab: contacts" },
+
+  "navSettings": "설정",
+  "@navSettings": { "description": "Bottom navigation tab: settings" },
+
+  "navGlobeSemantics": "Globe 탭",
+  "@navGlobeSemantics": { "description": "Semantics label for globe tab" },
+
+  "navGraphSemantics": "Graph 탭",
+  "@navGraphSemantics": { "description": "Semantics label for graph tab" },
+
+  "navContactsSemantics": "연락처 탭",
+  "@navContactsSemantics": { "description": "Semantics label for contacts tab" },
+
+  "navSettingsSemantics": "설정 탭",
+  "@navSettingsSemantics": { "description": "Semantics label for settings tab" },
+
+  "contactsTitle": "연락처",
+  "@contactsTitle": { "description": "Contacts screen heading" },
+
+  "contactsSearchHint": "이름으로 검색...",
+  "@contactsSearchHint": { "description": "Search field hint text" },
+
+  "contactsSortLabel": "정렬:",
+  "@contactsSortLabel": { "description": "Sort prefix label" },
+
+  "contactsErrorOccurred": "오류가 발생했습니다",
+  "@contactsErrorOccurred": { "description": "Generic error message in contacts list" },
+
+  "contactsRetry": "다시 시도",
+  "@contactsRetry": { "description": "Retry button text" },
+
+  "contactsSortCreatedDesc": "최신순",
+  "@contactsSortCreatedDesc": { "description": "Sort option: newest first" },
+
+  "contactsSortCreatedAsc": "오래된순",
+  "@contactsSortCreatedAsc": { "description": "Sort option: oldest first" },
+
+  "contactsSortNameAsc": "이름 A-Z",
+  "@contactsSortNameAsc": { "description": "Sort option: name ascending" },
+
+  "contactsSortNameDesc": "이름 Z-A",
+  "@contactsSortNameDesc": { "description": "Sort option: name descending" },
+
+  "emptyContactsTitle": "연락처가 없습니다",
+  "@emptyContactsTitle": { "description": "Empty state title when no contacts" },
+
+  "emptyContactsSubtitle": "새 연락처를 추가하여 시작하세요",
+  "@emptyContactsSubtitle": { "description": "Empty state subtitle prompting user to add a contact" },
+
+  "emptySearchTitle": "검색 결과가 없습니다",
+  "@emptySearchTitle": { "description": "Empty state title when search has no results" },
+
+  "emptySearchSubtitle": "다른 검색어를 시도해보세요",
+  "@emptySearchSubtitle": { "description": "Empty state subtitle for empty search results" },
+
+  "contactDetailDeleteTitle": "연락처 삭제",
+  "@contactDetailDeleteTitle": { "description": "Dialog title for delete confirmation" },
+
+  "contactDetailDeleteMessage": "{name}을(를) 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+  "@contactDetailDeleteMessage": {
+    "description": "Dialog message for delete confirmation",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "contactDetailDeleteConfirm": "삭제",
+  "@contactDetailDeleteConfirm": { "description": "Confirm delete button label" },
+
+  "contactDetailDeleteCancel": "취소",
+  "@contactDetailDeleteCancel": { "description": "Cancel delete button label" },
+
+  "contactDetailDeleteFailed": "삭제에 실패했습니다. 다시 시도해주세요.",
+  "@contactDetailDeleteFailed": { "description": "Snackbar message when delete fails" },
+
+  "contactDetailNotFound": "연락처를 찾을 수 없습니다",
+  "@contactDetailNotFound": { "description": "Message when contact is not found" },
+
+  "contactDetailEditComingSoon": "편집 기능은 곧 추가될 예정입니다.",
+  "@contactDetailEditComingSoon": { "description": "Snackbar when edit is tapped (not yet implemented)" },
+
+  "addContactTitle": "새 연락처",
+  "@addContactTitle": { "description": "Add contact screen title" },
+
+  "addContactStepBasic": "Basic",
+  "@addContactStepBasic": { "description": "Step indicator label: basic info" },
+
+  "addContactStepLocation": "Location",
+  "@addContactStepLocation": { "description": "Step indicator label: location" },
+
+  "addContactStepTags": "Tags",
+  "@addContactStepTags": { "description": "Step indicator label: tags" },
+
+  "addContactPrevious": "이전",
+  "@addContactPrevious": { "description": "Previous step button" },
+
+  "addContactNext": "다음",
+  "@addContactNext": { "description": "Next step button" },
+
+  "addContactSave": "저장",
+  "@addContactSave": { "description": "Save button" },
+
+  "addContactSaveFailed": "연락처 저장에 실패했습니다. 다시 시도해주세요.",
+  "@addContactSaveFailed": { "description": "Snackbar when contact save fails" },
+
+  "addContactDismiss": "닫기",
+  "@addContactDismiss": { "description": "Dismiss snackbar action" },
+
+  "validationNameRequired": "이름을 입력해주세요.",
+  "@validationNameRequired": { "description": "Validation: name is required" },
+
+  "validationEmailInvalid": "올바른 이메일 형식이 아닙니다.",
+  "@validationEmailInvalid": { "description": "Validation: email format is wrong" },
+
+  "basicInfoSectionTitle": "Basic Information",
+  "@basicInfoSectionTitle": { "description": "Basic info step section title" },
+
+  "basicInfoSectionSubtitle": "Enter the contact's basic details",
+  "@basicInfoSectionSubtitle": { "description": "Basic info step section subtitle" },
+
+  "basicInfoNameLabel": "이름 *",
+  "@basicInfoNameLabel": { "description": "Name field label" },
+
+  "basicInfoNameHint": "Full name",
+  "@basicInfoNameHint": { "description": "Name field hint" },
+
+  "basicInfoEmailLabel": "이메일",
+  "@basicInfoEmailLabel": { "description": "Email field label" },
+
+  "basicInfoPhoneLabel": "전화번호",
+  "@basicInfoPhoneLabel": { "description": "Phone field label" },
+
+  "basicInfoCompanyLabel": "회사",
+  "@basicInfoCompanyLabel": { "description": "Company field label" },
+
+  "basicInfoJobTitleLabel": "직함",
+  "@basicInfoJobTitleLabel": { "description": "Job title field label" },
+
+  "basicInfoJobTitleHint": "예) 프로덕트 매니저",
+  "@basicInfoJobTitleHint": { "description": "Job title field hint" },
+
+  "basicInfoMemoLabel": "메모",
+  "@basicInfoMemoLabel": { "description": "Memo field label" },
+
+  "basicInfoMemoHint": "이 연락처에 대한 메모",
+  "@basicInfoMemoHint": { "description": "Memo field hint" },
+
+  "locationSectionTitle": "위치",
+  "@locationSectionTitle": { "description": "Location step title" },
+
+  "locationSectionSubtitle": "지도에서 이 연락처를 만난 위치를 선택하세요",
+  "@locationSectionSubtitle": { "description": "Location step subtitle" },
+
+  "locationNameLabel": "장소명",
+  "@locationNameLabel": { "description": "Location name field label" },
+
+  "locationNameHint": "예) 서울 사무실, 강남 카페",
+  "@locationNameHint": { "description": "Location name field hint" },
+
+  "tagsAndSocialTitle": "태그 및 소셜",
+  "@tagsAndSocialTitle": { "description": "Tags & social step title" },
+
+  "tagsAndSocialSubtitle": "이 연락처에 태그와 소셜 링크를 추가하세요",
+  "@tagsAndSocialSubtitle": { "description": "Tags & social step subtitle" },
+
+  "tagsSectionTitle": "태그",
+  "@tagsSectionTitle": { "description": "Tags section header" },
+
+  "tagsAddCustomHint": "커스텀 태그 추가",
+  "@tagsAddCustomHint": { "description": "Custom tag input hint" },
+
+  "tagsSuggestedLabel": "추천",
+  "@tagsSuggestedLabel": { "description": "Suggested tags label" },
+
+  "socialLinksSectionTitle": "소셜 링크",
+  "@socialLinksSectionTitle": { "description": "Social links section header" },
+
+  "socialProfileUrlHint": "프로필 URL",
+  "@socialProfileUrlHint": { "description": "Social link URL input hint" },
+
+  "settingsAccountSection": "계정",
+  "@settingsAccountSection": { "description": "Settings: account section title" },
+
+  "settingsAppearanceSection": "외관",
+  "@settingsAppearanceSection": { "description": "Settings: appearance section title" },
+
+  "settingsThemeLabel": "테마",
+  "@settingsThemeLabel": { "description": "Settings: theme tile label" },
+
+  "settingsThemeSemantics": "테마: {mode}",
+  "@settingsThemeSemantics": {
+    "description": "Semantics label for theme tile",
+    "placeholders": {
+      "mode": { "type": "String" }
+    }
+  },
+
+  "settingsThemeHint": "두 번 탭하여 테마 전환",
+  "@settingsThemeHint": { "description": "Semantics hint for theme tile" },
+
+  "settingsSignOut": "로그아웃",
+  "@settingsSignOut": { "description": "Sign out tile label" },
+
+  "settingsNotificationsSection": "알림",
+  "@settingsNotificationsSection": { "description": "Settings: notifications section title" },
+
+  "settingsNotificationsLabel": "푸시 알림",
+  "@settingsNotificationsLabel": { "description": "Settings: push notifications tile label" },
+
+  "settingsNotificationsSubtitle": "새 연락처 및 업데이트 알림 받기",
+  "@settingsNotificationsSubtitle": { "description": "Settings: push notifications tile subtitle" },
+
+  "settingsNotificationsPermissionRequired": "알림 권한이 필요합니다",
+  "@settingsNotificationsPermissionRequired": { "description": "Snackbar when notification permission is denied" },
+
+  "loginSignInSubtitle": "계속하려면 로그인하세요",
+  "@loginSignInSubtitle": { "description": "Login screen subtitle" },
+
+  "loginSignInWithGoogle": "Google로 로그인",
+  "@loginSignInWithGoogle": { "description": "Google sign in button" },
+
+  "loginSignInWithGitHub": "GitHub로 로그인",
+  "@loginSignInWithGitHub": { "description": "GitHub sign in button" },
+
+  "loginFailed": "로그인에 실패했습니다: {error}",
+  "@loginFailed": {
+    "description": "Login failed snackbar message",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "globeViewProfile": "프로필 보기",
+  "@globeViewProfile": { "description": "Button to view contact profile from globe bottom sheet" },
+
+  "offlineWithCache": "오프라인 — {time} 캐시 데이터 표시 중",
+  "@offlineWithCache": {
+    "description": "Offline banner when cached data is available",
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+
+  "offlineNoCache": "오프라인 — 캐시 데이터 없음",
+  "@offlineNoCache": { "description": "Offline banner when no cached data is available" },
+
+  "timeAgoJustNow": "방금 전",
+  "@timeAgoJustNow": { "description": "Time ago: just now" },
+
+  "timeAgoMinutes": "{minutes}분 전",
+  "@timeAgoMinutes": {
+    "description": "Time ago: N minutes",
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "timeAgoHours": "{hours}시간 전",
+  "@timeAgoHours": {
+    "description": "Time ago: N hours",
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+
+  "timeAgoDays": "{days}일 전",
+  "@timeAgoDays": {
+    "description": "Time ago: N days",
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "graphLoadError": "그래프를 불러오지 못했습니다",
+  "@graphLoadError": { "description": "Error message shown when graph data fails to load" },
+
+  "graphEmptyState": "관계 데이터가 없습니다",
+  "@graphEmptyState": { "description": "Empty state message when graph has no relationship data" }
+}

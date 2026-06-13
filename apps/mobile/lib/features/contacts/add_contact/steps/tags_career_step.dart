@@ -4,6 +4,7 @@ import 'package:forui/forui.dart';
 
 import 'package:mobile/features/contacts/models/contact.dart';
 import 'package:mobile/features/contacts/providers/add_contact_provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 const _suggestedTags = [
   'client',
@@ -42,6 +43,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(addContactProvider);
     final notifier = ref.read(addContactProvider.notifier);
 
@@ -49,7 +51,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          'Tags & Social',
+          l10n.tagsAndSocialTitle,
           style: theme.typography.lg.copyWith(
             color: theme.colorScheme.foreground,
             fontWeight: FontWeight.bold,
@@ -57,7 +59,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Add tags and social links to this contact',
+          l10n.tagsAndSocialSubtitle,
           style: theme.typography.sm.copyWith(
             color: theme.colorScheme.mutedForeground,
           ),
@@ -65,7 +67,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
         const SizedBox(height: 20),
         // Tags section
         Text(
-          'Tags',
+          l10n.tagsSectionTitle,
           style: theme.typography.base.copyWith(
             color: theme.colorScheme.foreground,
             fontWeight: FontWeight.bold,
@@ -104,7 +106,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
           children: [
             Expanded(
               child: FTextField(
-                hint: 'Add custom tag',
+                hint: l10n.tagsAddCustomHint,
                 controller: _tagController,
               ),
             ),
@@ -124,7 +126,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
         const SizedBox(height: 12),
         // Suggested tags
         Text(
-          'Suggested',
+          l10n.tagsSuggestedLabel,
           style: theme.typography.xs.copyWith(
             color: theme.colorScheme.mutedForeground,
           ),
@@ -149,7 +151,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
         const SizedBox(height: 16),
         // Social links section
         Text(
-          'Social Links',
+          l10n.socialLinksSectionTitle,
           style: theme.typography.base.copyWith(
             color: theme.colorScheme.foreground,
             fontWeight: FontWeight.bold,
@@ -209,7 +211,7 @@ class _TagsCareerStepState extends ConsumerState<TagsCareerStep> {
             const SizedBox(width: 8),
             Expanded(
               child: FTextField(
-                hint: 'Profile URL',
+                hint: l10n.socialProfileUrlHint,
                 controller: _socialUrlController,
                 keyboardType: TextInputType.url,
               ),

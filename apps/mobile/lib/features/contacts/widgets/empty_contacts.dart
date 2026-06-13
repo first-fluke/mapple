@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
+
 class EmptyContacts extends StatelessWidget {
   final bool isSearchResult;
 
@@ -9,6 +11,7 @@ class EmptyContacts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Padding(
@@ -23,7 +26,7 @@ class EmptyContacts extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isSearchResult ? '검색 결과가 없습니다' : '연락처가 없습니다',
+              isSearchResult ? l10n.emptySearchTitle : l10n.emptyContactsTitle,
               style: theme.typography.lg.copyWith(
                 color: theme.colorScheme.foreground,
                 fontWeight: FontWeight.w600,
@@ -32,8 +35,8 @@ class EmptyContacts extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               isSearchResult
-                  ? '다른 검색어를 시도해보세요'
-                  : '새 연락처를 추가하여 시작하세요',
+                  ? l10n.emptySearchSubtitle
+                  : l10n.emptyContactsSubtitle,
               style: theme.typography.sm.copyWith(
                 color: theme.colorScheme.mutedForeground,
               ),

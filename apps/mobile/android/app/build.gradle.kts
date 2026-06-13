@@ -3,6 +3,12 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Firebase / Google Services — only active when google-services.json is present.
+    // To enable:
+    //   1. Copy your google-services.json to android/app/
+    //   2. Uncomment the plugin id in android/settings.gradle.kts
+    //   3. Uncomment the line below
+    // id("com.google.gms.google-services")
 }
 
 android {

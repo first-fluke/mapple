@@ -8,16 +8,22 @@ import 'package:mobile/features/contacts/add_contact/steps/location_step.dart';
 import 'package:mobile/features/contacts/add_contact/steps/tags_career_step.dart';
 import 'package:mobile/features/contacts/providers/add_contact_provider.dart';
 import 'package:mobile/features/contacts/providers/contacts_provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class AddContactScreen extends ConsumerWidget {
   const AddContactScreen({super.key});
-
-  static const _stepLabels = ['Basic', 'Location', 'Tags'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(addContactProvider);
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
+
+    final stepLabels = [
+      l10n.addContactStepBasic,
+      l10n.addContactStepLocation,
+      l10n.addContactStepTags,
+    ];
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
@@ -33,22 +39,33 @@ class AddContactScreen extends ConsumerWidget {
             child: Row(
               children: [
                 FButton.icon(
-                  onPress: () {
-                    ref.read(addContactProvider.notifier).reset();
-                    context.go('/contacts');
-                  },
+                  onPress: state.isSaving
+                      ? null
+                      : () {
+                          ref.read(addContactProvider.notifier).reset();
+                          context.go('/contacts');
+                        },
                   child: FIcon(FAssets.icons.x),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'New Contact',
+                    l10n.addContactTitle,
                     style: theme.typography.xl.copyWith(
                       color: theme.colorScheme.foreground,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+                if (state.isSaving)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -56,14 +73,15 @@ class AddContactScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              children: List.generate(_stepLabels.length, (index) {
+              children: List.generate(stepLabels.length, (index) {
                 final isActive = index == state.currentStep;
                 final isCompleted = index < state.currentStep;
                 return Expanded(
                   child: GestureDetector(
-                    onTap: isCompleted
-                        ? () =>
-                            ref.read(addContactProvider.notifier).goToStep(index)
+                    onTap: (isCompleted && !state.isSaving)
+                        ? () => ref
+                            .read(addContactProvider.notifier)
+                            .goToStep(index)
                         : null,
                     child: Column(
                       children: [
@@ -92,15 +110,15 @@ class AddContactScreen extends ConsumerWidget {
                                     ? FIcon(
                                         FAssets.icons.check,
                                         size: 14,
-                                        color:
-                                            theme.colorScheme.primaryForeground,
+                                        color: theme
+                                            .colorScheme.primaryForeground,
                                       )
                                     : Text(
                                         '${index + 1}',
                                         style: theme.typography.xs.copyWith(
                                           color: isActive
-                                              ? theme
-                                                  .colorScheme.primaryForeground
+                                              ? theme.colorScheme
+                                                  .primaryForeground
                                               : theme.colorScheme
                                                   .secondaryForeground,
                                           fontWeight: FontWeight.bold,
@@ -108,7 +126,7 @@ class AddContactScreen extends ConsumerWidget {
                                       ),
                               ),
                             ),
-                            if (index < _stepLabels.length - 1)
+                            if (index < stepLabels.length - 1)
                               Expanded(
                                 child: Container(
                                   height: 2,
@@ -121,13 +139,14 @@ class AddContactScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _stepLabels[index],
+                          stepLabels[index],
                           style: theme.typography.xs.copyWith(
                             color: isActive
                                 ? theme.colorScheme.foreground
                                 : theme.colorScheme.mutedForeground,
-                            fontWeight:
-                                isActive ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isActive
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -148,7 +167,7 @@ class AddContactScreen extends ConsumerWidget {
             },
           ),
           // Bottom navigation
-          FDivider(),
+          const FDivider(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -157,28 +176,32 @@ class AddContactScreen extends ConsumerWidget {
                   Expanded(
                     child: FButton(
                       style: FButtonStyle.outline,
-                      onPress: () =>
-                          ref.read(addContactProvider.notifier).previousStep(),
-                      label: const Text('Back'),
+                      onPress: state.isSaving
+                          ? null
+                          : () => ref
+                              .read(addContactProvider.notifier)
+                              .previousStep(),
+                      label: Text(l10n.addContactPrevious),
                     ),
                   ),
                 if (state.currentStep > 0) const SizedBox(width: 12),
                 Expanded(
                   child: state.currentStep < 2
                       ? FButton(
-                          onPress: state.currentStep == 0 &&
-                                  !state.isBasicInfoValid
+                          onPress: (state.currentStep == 0 &&
+                                      !state.isBasicInfoValid) ||
+                                  state.isSaving
                               ? null
                               : () => ref
                                   .read(addContactProvider.notifier)
                                   .nextStep(),
-                          label: const Text('Next'),
+                          label: Text(l10n.addContactNext),
                         )
                       : FButton(
-                          onPress: !state.isBasicInfoValid
+                          onPress: (!state.isBasicInfoValid || state.isSaving)
                               ? null
                               : () => _saveContact(context, ref),
-                          label: const Text('Save Contact'),
+                          label: Text(l10n.addContactSave),
                         ),
                 ),
               ],
@@ -189,11 +212,68 @@ class AddContactScreen extends ConsumerWidget {
     );
   }
 
-  void _saveContact(BuildContext context, WidgetRef ref) {
-    final state = ref.read(addContactProvider);
-    final contact = state.toContact();
-    ref.read(contactsProvider.notifier).addContact(contact);
-    ref.read(addContactProvider.notifier).reset();
-    context.go('/contacts/${contact.id}');
+  Future<void> _saveContact(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final formState = ref.read(addContactProvider);
+    final nameError = _validateName(formState.name, l10n);
+    if (nameError != null) {
+      _showError(context, nameError);
+      return;
+    }
+    if (formState.email != null && formState.email!.trim().isNotEmpty) {
+      final emailError = _validateEmail(formState.email!, l10n);
+      if (emailError != null) {
+        _showError(context, emailError);
+        return;
+      }
+    }
+
+    ref.read(addContactProvider.notifier).setSaving(saving: true);
+    try {
+      final payload = formState.toPayload();
+      final created =
+          await ref.read(contactsProvider.notifier).createContact(payload);
+      ref.read(addContactProvider.notifier).reset();
+      if (context.mounted) {
+        context.go('/contacts/${created.id}');
+      }
+    } catch (e) {
+      ref.read(addContactProvider.notifier).setSaveError(e.toString());
+      if (context.mounted) {
+        final l10nInner = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10nInner.addContactSaveFailed),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            action: SnackBarAction(
+              label: l10nInner.addContactDismiss,
+              textColor: Theme.of(context).colorScheme.onError,
+              onPressed: () =>
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  String? _validateName(String name, AppLocalizations l10n) {
+    if (name.trim().isEmpty) return l10n.validationNameRequired;
+    return null;
+  }
+
+  String? _validateEmail(String email, AppLocalizations l10n) {
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailRegex.hasMatch(email.trim())) return l10n.validationEmailInvalid;
+    return null;
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 }

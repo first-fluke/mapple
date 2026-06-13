@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/router/router.dart';
 import 'package:mobile/theme/theme_provider.dart';
 
@@ -30,6 +32,20 @@ class GlobeApp extends ConsumerWidget {
         title: 'Globe CRM',
         debugShowCheckedModeBanner: false,
         themeMode: themeMode,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (locale == null) return supportedLocales.first;
+          for (final supported in supportedLocales) {
+            if (supported.languageCode == locale.languageCode) return supported;
+          }
+          return supportedLocales.first;
+        },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFF292524),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import 'package:mobile/features/contacts/providers/add_contact_provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class BasicInfoStep extends ConsumerStatefulWidget {
   const BasicInfoStep({super.key});
@@ -45,13 +46,14 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(addContactProvider.notifier);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          'Basic Information',
+          l10n.basicInfoSectionTitle,
           style: theme.typography.lg.copyWith(
             color: theme.colorScheme.foreground,
             fontWeight: FontWeight.bold,
@@ -59,21 +61,21 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Enter the contact\'s basic details',
+          l10n.basicInfoSectionSubtitle,
           style: theme.typography.sm.copyWith(
             color: theme.colorScheme.mutedForeground,
           ),
         ),
         const SizedBox(height: 20),
         FTextField(
-          label: const Text('Name *'),
-          hint: 'Full name',
+          label: Text(l10n.basicInfoNameLabel),
+          hint: l10n.basicInfoNameHint,
           controller: _nameController,
           onChange: (value) => notifier.setName(value),
         ),
         const SizedBox(height: 16),
         FTextField(
-          label: const Text('Email'),
+          label: Text(l10n.basicInfoEmailLabel),
           hint: 'email@example.com',
           controller: _emailController,
           onChange: (value) => notifier.setEmail(value),
@@ -81,7 +83,7 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
         ),
         const SizedBox(height: 16),
         FTextField(
-          label: const Text('Phone'),
+          label: Text(l10n.basicInfoPhoneLabel),
           hint: '+1 234 567 8900',
           controller: _phoneController,
           onChange: (value) => notifier.setPhone(value),
@@ -89,22 +91,22 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep> {
         ),
         const SizedBox(height: 16),
         FTextField(
-          label: const Text('Company'),
-          hint: 'Company name',
+          label: Text(l10n.basicInfoCompanyLabel),
+          hint: l10n.basicInfoCompanyLabel,
           controller: _companyController,
           onChange: (value) => notifier.setCompany(value),
         ),
         const SizedBox(height: 16),
         FTextField(
-          label: const Text('Job Title'),
-          hint: 'e.g. Product Manager',
+          label: Text(l10n.basicInfoJobTitleLabel),
+          hint: l10n.basicInfoJobTitleHint,
           controller: _jobTitleController,
           onChange: (value) => notifier.setJobTitle(value),
         ),
         const SizedBox(height: 16),
         FTextField(
-          label: const Text('Memo'),
-          hint: 'Notes about this contact',
+          label: Text(l10n.basicInfoMemoLabel),
+          hint: l10n.basicInfoMemoHint,
           controller: _memoController,
           onChange: (value) => notifier.setMemo(value),
           minLines: 3,

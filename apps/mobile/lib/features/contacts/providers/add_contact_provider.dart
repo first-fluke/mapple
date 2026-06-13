@@ -20,6 +20,9 @@ class AddContactState {
   // Step 3: Tags & Career
   final List<String> tags;
   final List<SocialLink> socialLinks;
+  // Save state
+  final bool isSaving;
+  final String? saveError;
 
   const AddContactState({
     this.currentStep = 0,
@@ -34,6 +37,8 @@ class AddContactState {
     this.locationName,
     this.tags = const [],
     this.socialLinks = const [],
+    this.isSaving = false,
+    this.saveError,
   });
 
   AddContactState copyWith({
@@ -49,6 +54,8 @@ class AddContactState {
     String? locationName,
     List<String>? tags,
     List<SocialLink>? socialLinks,
+    bool? isSaving,
+    String? Function()? saveError,
   }) {
     return AddContactState(
       currentStep: currentStep ?? this.currentStep,
@@ -63,29 +70,31 @@ class AddContactState {
       locationName: locationName ?? this.locationName,
       tags: tags ?? this.tags,
       socialLinks: socialLinks ?? this.socialLinks,
+      isSaving: isSaving ?? this.isSaving,
+      saveError: saveError != null ? saveError() : this.saveError,
     );
   }
 
   bool get isBasicInfoValid => name.trim().isNotEmpty;
 
-  Contact toContact() {
-    final now = DateTime.now();
-    return Contact(
-      id: now.millisecondsSinceEpoch.toString(),
-      name: name.trim(),
-      email: email?.trim(),
-      phone: phone?.trim(),
-      company: company?.trim(),
-      jobTitle: jobTitle?.trim(),
-      memo: memo?.trim(),
-      latitude: latitude,
-      longitude: longitude,
-      locationName: locationName,
-      tags: tags,
-      socialLinks: socialLinks,
-      createdAt: now,
-      updatedAt: now,
-    );
+  /// Build the JSON payload for POST /contacts.
+  Map<String, dynamic> toPayload() {
+    return {
+      'name': name.trim(),
+      if (email != null && email!.trim().isNotEmpty) 'email': email!.trim(),
+      if (phone != null && phone!.trim().isNotEmpty) 'phone': phone!.trim(),
+      if (company != null && company!.trim().isNotEmpty)
+        'company': company!.trim(),
+      if (jobTitle != null && jobTitle!.trim().isNotEmpty)
+        'job_title': jobTitle!.trim(),
+      if (memo != null && memo!.trim().isNotEmpty) 'memo': memo!.trim(),
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (locationName != null && locationName!.trim().isNotEmpty)
+        'location_name': locationName!.trim(),
+      'tags': tags,
+      'social_links': socialLinks.map((s) => s.toJson()).toList(),
+    };
   }
 }
 
@@ -165,5 +174,13 @@ class AddContactNotifier extends Notifier<AddContactState> {
     final links = [...state.socialLinks];
     links.removeAt(index);
     state = state.copyWith(socialLinks: links);
+  }
+
+  void setSaving({required bool saving}) {
+    state = state.copyWith(isSaving: saving, saveError: () => null);
+  }
+
+  void setSaveError(String error) {
+    state = state.copyWith(isSaving: false, saveError: () => error);
   }
 }

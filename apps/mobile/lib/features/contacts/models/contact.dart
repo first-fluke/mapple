@@ -22,6 +22,21 @@ class SocialLink {
       url: url ?? this.url,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'platform': platform.name,
+        'url': url,
+      };
+
+  factory SocialLink.fromJson(Map<String, dynamic> json) {
+    return SocialLink(
+      platform: SocialPlatform.values.firstWhere(
+        (p) => p.name == json['platform'],
+        orElse: () => SocialPlatform.website,
+      ),
+      url: json['url'] as String,
+    );
+  }
 }
 
 enum TimelineEventType {
@@ -68,6 +83,7 @@ class Meeting {
 @immutable
 class Contact {
   final String id;
+  final int? userId;
   final String name;
   final String? email;
   final String? phone;
@@ -82,13 +98,12 @@ class Contact {
   final double? latitude;
   final double? longitude;
   final String? locationName;
-  final int id;
-  final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   const Contact({
     required this.id,
+    this.userId,
     required this.name,
     this.email,
     this.phone,
@@ -103,13 +118,13 @@ class Contact {
     this.latitude,
     this.longitude,
     this.locationName,
-    required this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
 
   Contact copyWith({
     String? id,
+    int? userId,
     String? name,
     String? email,
     String? phone,
@@ -129,6 +144,7 @@ class Contact {
   }) {
     return Contact(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
@@ -155,12 +171,48 @@ class Contact {
     }
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
+
+  /// Serialise for POST /contacts and PATCH /contacts/:id.
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      if (email != null) 'email': email,
+      if (phone != null) 'phone': phone,
+      if (company != null) 'company': company,
+      if (jobTitle != null) 'job_title': jobTitle,
+      if (avatarUrl != null) 'avatar_url': avatarUrl,
+      if (memo != null) 'memo': memo,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (locationName != null) 'location_name': locationName,
+      'tags': tags,
+      'social_links': socialLinks.map((s) => s.toJson()).toList(),
+    };
+  }
+
   factory Contact.fromJson(Map<String, dynamic> json) {
-      id: json['id'] as int,
-      userId: json['user_id'] as int,
+    return Contact(
+      id: json['id'].toString(),
+      userId: json['user_id'] as int?,
       name: json['name'] as String,
       email: json['email'] as String?,
       phone: json['phone'] as String?,
+      company: json['company'] as String?,
+      jobTitle: json['job_title'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
+      memo: json['memo'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      locationName: json['location_name'] as String?,
+      tags: (json['tags'] as List?)?.cast<String>() ?? const [],
+      socialLinks: (json['social_links'] as List?)
+              ?.map((e) => SocialLink.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      timeline: const [],
+      meetings: const [],
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
 }

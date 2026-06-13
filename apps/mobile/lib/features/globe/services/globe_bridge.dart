@@ -90,8 +90,8 @@ class GlobeBridge {
         'payload': {
           'lat': lat,
           'lng': lng,
-          if (altitude != null) 'altitude': altitude,
-          if (durationMs != null) 'durationMs': durationMs,
+          'altitude': ?altitude,
+          'durationMs': ?durationMs,
         },
       });
 

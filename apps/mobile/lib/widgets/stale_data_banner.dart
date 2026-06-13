@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 
+import 'package:mobile/l10n/app_localizations.dart';
+
 class StaleDataBanner extends StatelessWidget {
   final DateTime? lastSyncedAt;
 
@@ -9,10 +11,11 @@ class StaleDataBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
 
     final label = lastSyncedAt != null
-        ? 'Offline — showing cached data from ${_formatTime(lastSyncedAt!)}'
-        : 'Offline — no cached data available';
+        ? l10n.offlineWithCache(_formatTime(lastSyncedAt!, l10n))
+        : l10n.offlineNoCache;
 
     return Container(
       width: double.infinity,
@@ -44,13 +47,13 @@ class StaleDataBanner extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime time) {
+  String _formatTime(DateTime time, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.timeAgoJustNow;
+    if (diff.inMinutes < 60) return l10n.timeAgoMinutes(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.timeAgoHours(diff.inHours);
+    return l10n.timeAgoDays(diff.inDays);
   }
 }

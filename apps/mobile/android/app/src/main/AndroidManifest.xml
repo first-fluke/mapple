@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for push notifications on Android 13+ (API 33+).
+         On API < 33 this permission is auto-granted and safe to declare. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:label="mobile"
         android:name="${applicationName}"
@@ -30,7 +34,21 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- FCM default notification channel (Android 8.0+).
+             Set this to a channel ID you create in code, or omit to use the
+             firebase_messaging default channel. Requires google-services.json. -->
+        <!-- <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" /> -->
+
+        <!-- Optional: custom FCM notification icon (must be a drawable resource).
+             Falls back to the app icon when absent. -->
+        <!-- <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" /> -->
     </application>
+
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

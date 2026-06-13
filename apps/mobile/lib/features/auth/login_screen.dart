@@ -5,6 +5,7 @@ import 'package:forui/forui.dart';
 import 'package:mobile/core/config.dart';
 import 'package:mobile/features/auth/auth_provider.dart';
 import 'package:mobile/features/auth/oauth_webview_screen.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -30,8 +31,9 @@ class LoginScreen extends ConsumerWidget {
           );
     } catch (e) {
       if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: $e')),
+          SnackBar(content: Text(l10n.loginFailed(e.toString()))),
         );
       }
     }
@@ -41,6 +43,7 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (auth is AuthLoading) {
       return const FScaffold(
@@ -58,7 +61,7 @@ class LoginScreen extends ConsumerWidget {
               FIcon(FAssets.icons.globe, size: 64),
               const SizedBox(height: 16),
               Text(
-                'Globe CRM',
+                l10n.appTitle,
                 style: theme.typography.xl3.copyWith(
                   color: theme.colorScheme.foreground,
                   fontWeight: FontWeight.bold,
@@ -66,7 +69,7 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Sign in to continue',
+                l10n.loginSignInSubtitle,
                 style: theme.typography.base.copyWith(
                   color: theme.colorScheme.mutedForeground,
                 ),
@@ -76,7 +79,7 @@ class LoginScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: FButton(
                   onPress: () => _signIn(context, ref, 'google'),
-                  label: const Text('Sign in with Google'),
+                  label: Text(l10n.loginSignInWithGoogle),
                 ),
               ),
               const SizedBox(height: 12),
@@ -85,7 +88,7 @@ class LoginScreen extends ConsumerWidget {
                 child: FButton(
                   style: FButtonStyle.outline,
                   onPress: () => _signIn(context, ref, 'github'),
-                  label: const Text('Sign in with GitHub'),
+                  label: Text(l10n.loginSignInWithGitHub),
                 ),
               ),
             ],

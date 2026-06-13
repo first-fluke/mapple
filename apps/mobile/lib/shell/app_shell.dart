@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:mobile/l10n/app_localizations.dart';
 
 class NavigationShellNotifier extends Notifier<StatefulNavigationShell?> {
   @override
@@ -45,21 +45,9 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return FScaffold(
-      content: Stack(
-        children: [
-          navigationShell,
-          Positioned(
-            top: Platform.isIOS ? 16 : null,
-            bottom: Platform.isAndroid ? 16 : null,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {},
-              child: const Icon(Icons.add),
-            ),
-          ),
-        ],
-      ),
       content: widget.navigationShell,
       footer: FBottomNavigationBar(
         index: widget.navigationShell.currentIndex,
@@ -71,29 +59,29 @@ class _AppShellState extends ConsumerState<AppShell> {
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.globe),
             label: Semantics(
-              label: 'Globe tab',
-              child: const Text('Globe'),
+              label: l10n.navGlobeSemantics,
+              child: Text(l10n.navGlobe),
             ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.chartLine),
             label: Semantics(
-              label: 'Graph tab',
-              child: const Text('Graph'),
+              label: l10n.navGraphSemantics,
+              child: Text(l10n.navGraph),
             ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.users),
             label: Semantics(
-              label: 'Contacts tab',
-              child: const Text('Contacts'),
+              label: l10n.navContactsSemantics,
+              child: Text(l10n.navContacts),
             ),
           ),
           FBottomNavigationBarItem(
             icon: FIcon(FAssets.icons.settings),
             label: Semantics(
-              label: 'Settings tab',
-              child: const Text('Settings'),
+              label: l10n.navSettingsSemantics,
+              child: Text(l10n.navSettings),
             ),
           ),
         ],

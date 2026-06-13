@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import 'package:mobile/features/contacts/providers/add_contact_provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 const _mapHtml = '''
 <!DOCTYPE html>
@@ -171,6 +172,7 @@ class _LocationStepState extends ConsumerState<LocationStep> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(addContactProvider);
 
     return Column(
@@ -179,7 +181,7 @@ class _LocationStepState extends ConsumerState<LocationStep> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
           child: Text(
-            'Location',
+            l10n.locationSectionTitle,
             style: theme.typography.lg.copyWith(
               color: theme.colorScheme.foreground,
               fontWeight: FontWeight.bold,
@@ -189,7 +191,7 @@ class _LocationStepState extends ConsumerState<LocationStep> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Text(
-            'Tap on the map to place a pin where you met this contact',
+            l10n.locationSectionSubtitle,
             style: theme.typography.sm.copyWith(
               color: theme.colorScheme.mutedForeground,
             ),
@@ -235,8 +237,8 @@ class _LocationStepState extends ConsumerState<LocationStep> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: FTextField(
-            label: const Text('Location name'),
-            hint: 'e.g. Seoul Office, Gangnam Cafe',
+            label: Text(l10n.locationNameLabel),
+            hint: l10n.locationNameHint,
             controller: _locationNameController,
             onChange: (value) {
               ref.read(addContactProvider.notifier).setLocation(

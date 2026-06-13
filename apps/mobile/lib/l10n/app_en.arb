@@ -1,0 +1,107 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Globe CRM",
+
+  "navGlobe": "Globe",
+  "navGraph": "Graph",
+  "navContacts": "Contacts",
+  "navSettings": "Settings",
+
+  "navGlobeSemantics": "Globe tab",
+  "navGraphSemantics": "Graph tab",
+  "navContactsSemantics": "Contacts tab",
+  "navSettingsSemantics": "Settings tab",
+
+  "contactsTitle": "Contacts",
+  "contactsSearchHint": "Search by name...",
+  "contactsSortLabel": "Sort:",
+
+  "contactsErrorOccurred": "An error occurred",
+  "contactsRetry": "Retry",
+
+  "contactsSortCreatedDesc": "Newest",
+  "contactsSortCreatedAsc": "Oldest",
+  "contactsSortNameAsc": "Name A-Z",
+  "contactsSortNameDesc": "Name Z-A",
+
+  "emptyContactsTitle": "No contacts",
+  "emptyContactsSubtitle": "Add a new contact to get started",
+  "emptySearchTitle": "No results",
+  "emptySearchSubtitle": "Try a different search term",
+
+  "contactDetailDeleteTitle": "Delete Contact",
+  "contactDetailDeleteMessage": "Delete {name}?\nThis action cannot be undone.",
+  "contactDetailDeleteConfirm": "Delete",
+  "contactDetailDeleteCancel": "Cancel",
+  "contactDetailDeleteFailed": "Failed to delete. Please try again.",
+  "contactDetailNotFound": "Contact not found",
+  "contactDetailEditComingSoon": "Edit feature coming soon.",
+
+  "addContactTitle": "New Contact",
+  "addContactStepBasic": "Basic",
+  "addContactStepLocation": "Location",
+  "addContactStepTags": "Tags",
+  "addContactPrevious": "Previous",
+  "addContactNext": "Next",
+  "addContactSave": "Save",
+  "addContactSaveFailed": "Failed to save contact. Please try again.",
+  "addContactDismiss": "Dismiss",
+
+  "validationNameRequired": "Name is required.",
+  "validationEmailInvalid": "Invalid email address.",
+
+  "basicInfoSectionTitle": "Basic Information",
+  "basicInfoSectionSubtitle": "Enter the contact's basic details",
+  "basicInfoNameLabel": "Name *",
+  "basicInfoNameHint": "Full name",
+  "basicInfoEmailLabel": "Email",
+  "basicInfoPhoneLabel": "Phone",
+  "basicInfoCompanyLabel": "Company",
+  "basicInfoJobTitleLabel": "Job Title",
+  "basicInfoJobTitleHint": "e.g. Product Manager",
+  "basicInfoMemoLabel": "Memo",
+  "basicInfoMemoHint": "Notes about this contact",
+
+  "locationSectionTitle": "Location",
+  "locationSectionSubtitle": "Tap on the map to place a pin where you met this contact",
+  "locationNameLabel": "Location name",
+  "locationNameHint": "e.g. Seoul Office, Gangnam Cafe",
+
+  "tagsAndSocialTitle": "Tags & Social",
+  "tagsAndSocialSubtitle": "Add tags and social links to this contact",
+  "tagsSectionTitle": "Tags",
+  "tagsAddCustomHint": "Add custom tag",
+  "tagsSuggestedLabel": "Suggested",
+  "socialLinksSectionTitle": "Social Links",
+  "socialProfileUrlHint": "Profile URL",
+
+  "settingsAccountSection": "Account",
+  "settingsAppearanceSection": "Appearance",
+  "settingsThemeLabel": "Theme",
+  "settingsThemeSemantics": "Theme: {mode}",
+  "settingsThemeHint": "Double tap to toggle theme",
+  "settingsSignOut": "Sign Out",
+  "settingsNotificationsSection": "Notifications",
+  "settingsNotificationsLabel": "Push Notifications",
+  "settingsNotificationsSubtitle": "Receive alerts for new contacts and updates",
+  "settingsNotificationsPermissionRequired": "Notification permission is required",
+
+  "loginSignInSubtitle": "Sign in to continue",
+  "loginSignInWithGoogle": "Sign in with Google",
+  "loginSignInWithGitHub": "Sign in with GitHub",
+  "loginFailed": "Login failed: {error}",
+
+  "globeViewProfile": "View Profile",
+
+  "offlineWithCache": "Offline — showing cached data from {time}",
+  "offlineNoCache": "Offline — no cached data available",
+
+  "timeAgoJustNow": "just now",
+  "timeAgoMinutes": "{minutes}m ago",
+  "timeAgoHours": "{hours}h ago",
+  "timeAgoDays": "{days}d ago",
+
+  "graphLoadError": "Failed to load graph",
+  "graphEmptyState": "No relationship data"
+}

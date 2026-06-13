@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import 'package:mobile/features/auth/auth_provider.dart';
+import 'package:mobile/features/notifications/notifications_provider.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/theme/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -12,7 +14,9 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final auth = ref.watch(authProvider);
+    final notifications = ref.watch(notificationsProvider);
     final theme = context.theme;
+    final l10n = AppLocalizations.of(context)!;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -21,7 +25,7 @@ class SettingsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'Account',
+              l10n.settingsAccountSection,
               style: theme.typography.lg.copyWith(
                 color: theme.colorScheme.foreground,
                 fontWeight: FontWeight.bold,
@@ -37,7 +41,7 @@ class SettingsScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
-            'Appearance',
+            l10n.settingsAppearanceSection,
             style: theme.typography.lg.copyWith(
               color: theme.colorScheme.foreground,
               fontWeight: FontWeight.bold,
@@ -45,12 +49,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         Semantics(
-          label: 'Theme: ${themeMode.name}',
-          hint: 'Double tap to toggle theme',
+          label: l10n.settingsThemeSemantics(themeMode.name),
+          hint: l10n.settingsThemeHint,
           button: true,
           child: FTile(
             prefixIcon: FIcon(FAssets.icons.sun),
-            title: const Text('Theme'),
+            title: Text(l10n.settingsThemeLabel),
             suffixIcon: FIcon(
               themeMode == ThemeMode.dark
                   ? FAssets.icons.moon
@@ -60,12 +64,49 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            l10n.settingsNotificationsSection,
+            style: theme.typography.lg.copyWith(
+              color: theme.colorScheme.foreground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        FTile(
+          prefixIcon: FIcon(FAssets.icons.bell),
+          title: Text(l10n.settingsNotificationsLabel),
+          subtitle: Text(l10n.settingsNotificationsSubtitle),
+          suffixIcon: Switch(
+            value: notifications.isEnabled,
+            onChanged: (_) => _toggleNotifications(context, ref, l10n),
+          ),
+          onPress: () => _toggleNotifications(context, ref, l10n),
+        ),
+        const SizedBox(height: 16),
         FTile(
           prefixIcon: FIcon(FAssets.icons.logOut),
-          title: const Text('Sign Out'),
+          title: Text(l10n.settingsSignOut),
           onPress: () => ref.read(authProvider.notifier).logout(),
         ),
       ],
     );
+  }
+
+  Future<void> _toggleNotifications(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final granted =
+        await ref.read(notificationsProvider.notifier).toggle();
+    if (!granted && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.settingsNotificationsPermissionRequired),
+        ),
+      );
+    }
   }
 }
