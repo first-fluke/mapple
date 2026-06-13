@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
   },
   async rewrites() {
-    const apiUrl = process.env.API_URL || 'http://localhost:8000';
+    const apiUrl = process.env.API_URL || 'http://localhost:11008';
     return [
       {
         source: '/api/proxy/:path*',
