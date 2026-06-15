@@ -32,6 +32,10 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
+      # NOTE: Cloudflare Workers deploy is scaffolded (wrangler.jsonc,
+      # open-next.config.ts, cf:* scripts) but blocked until @opennextjs/cloudflare
+      # supports Next 16 Node-runtime proxy.ts — see opennextjs-cloudflare#962.
+      # Switch this step to `bun run cf:deploy` once that lands.
       - name: Deploy to Vercel
         run: |
           bunx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}

@@ -1,7 +1,7 @@
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['better-sqlite3'],
   reactCompiler: true,
   images: {
     remotePatterns: [
@@ -28,3 +28,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Enables OpenNext's Cloudflare bindings (getCloudflareContext) during `next dev`.
+initOpenNextCloudflareForDev();
