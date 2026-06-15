@@ -1,6 +1,6 @@
-import type { GlobePin, SetPinsMessage } from '@globe-crm/types';
-import { isInboundMessage } from '@globe-crm/types';
 import { describe, expect, it } from 'vitest';
+import type { GlobePin, SetPinsMessage } from '../../../../../packages/types/src/globe-bridge';
+import { isInboundMessage } from '../../../../../packages/types/src/globe-bridge';
 
 function generatePins(count: number): GlobePin[] {
   const pins: GlobePin[] = [];

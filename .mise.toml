@@ -1,6 +1,30 @@
 [tools]
 node = "22"
+bun = "latest"
 python = "3.12"
 uv = "latest"
 flutter = "3"
 terraform = "1"
+
+# `mise install` installs the tools above, then the postinstall hook bootstraps
+# each sub-app's dependencies using its own native package manager.
+[hooks]
+postinstall = "mise run install"
+
+[tasks.install]
+description = "Install dependencies in each app with its native package manager"
+run = '''
+cd apps/web && bun install
+cd ../api && uv sync
+cd ../mobile && flutter pub get
+'''
+
+[tasks.dev-web]
+description = "Run the web dev server"
+dir = "apps/web"
+run = "bun run dev"
+
+[tasks.dev-api]
+description = "Run the API dev server"
+dir = "apps/api"
+run = "uv run uvicorn src.main:app --reload"

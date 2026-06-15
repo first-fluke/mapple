@@ -1,6 +1,5 @@
-import type { GlobeMode } from '@globe-crm/types';
 import { atom } from 'jotai';
 
-export type { GlobeMode };
+export type GlobeMode = 'explore' | 'select_location' | 'view_connections';
 
 export const globeModeAtom = atom<GlobeMode>('explore');
