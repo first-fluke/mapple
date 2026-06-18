@@ -164,22 +164,19 @@ class ContactRepository:
         avatar_url: str | None = None,
         tag_ids: list[int] | None = None,
     ) -> Contact:
-        if name is not None:
-            contact.name = name
-        if email is not None:
-            contact.email = email
-        if phone is not None:
-            contact.phone = phone
-        if latitude is not None:
-            contact.latitude = latitude
-        if longitude is not None:
-            contact.longitude = longitude
-        if avatar_url is not None:
-            contact.avatar_url = avatar_url
-        if country is not None:
-            contact.country = country
-        if city is not None:
-            contact.city = city
+        scalar_updates = {
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "latitude": latitude,
+            "longitude": longitude,
+            "avatar_url": avatar_url,
+            "country": country,
+            "city": city,
+        }
+        for field, value in scalar_updates.items():
+            if value is not None:
+                setattr(contact, field, value)
         if tag_ids is not None:
             contact.tags = await self._resolve_tags(user_id, tag_ids)
         await self.session.commit()
