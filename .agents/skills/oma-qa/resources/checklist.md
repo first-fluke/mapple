@@ -87,7 +87,7 @@
 
 ---
 
-## Accessibility Checklist (WCAG 2.1 AA)
+## Accessibility Checklist (WCAG 2.2 AA)
 
 ### Perceivable
 - [ ] All images have alt text
@@ -271,7 +271,7 @@
 
 ### Important (Should Pass)
 - [ ] Test coverage > 80%
-- [ ] Accessibility WCAG 2.1 AA
+- [ ] Accessibility WCAG 2.2 AA
 - [ ] Code quality metrics met
 - [ ] Documentation complete
 
@@ -284,25 +284,25 @@
 
 ## Issue Prioritization
 
-### 🔴 CRITICAL (Block Deployment)
+### CRITICAL (Block Deployment)
 - Security vulnerabilities (SQL injection, XSS, auth bypass)
 - Data loss bugs
 - Application crashes
 - Complete feature breakage
 
-### 🟠 HIGH (Fix Before Launch)
+### HIGH (Fix Before Launch)
 - Performance issues (> 5s load time)
 - Major accessibility violations
 - Missing auth checks
 - Broken core functionality
 
-### 🟡 MEDIUM (Fix in Sprint)
+### MEDIUM (Fix in Sprint)
 - Minor bugs
 - Code quality issues
 - Missing tests
 - Minor accessibility issues
 
-### 🔵 LOW (Backlog)
+### LOW (Backlog)
 - Refactoring opportunities
 - Performance optimizations
 - Nice-to-have features

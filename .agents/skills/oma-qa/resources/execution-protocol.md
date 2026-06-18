@@ -11,7 +11,7 @@
 5. **After review**: add recurring issues to `../../_shared/core/lessons-learned.md`
 6. **If standards matter**: read `resources/iso-quality.md`
 
-**⚠️ Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
+**Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
 
 Follow these steps in order (adjust depth by difficulty).
 
@@ -29,7 +29,7 @@ Follow these steps in order (adjust depth by difficulty).
 Review in this priority order:
 1. **Security** (CRITICAL): OWASP Top 10, auth, injection, data protection
 2. **Performance**: API latency, N+1 queries, bundle size, Core Web Vitals
-3. **Accessibility**: WCAG 2.1 AA, keyboard nav, screen reader, contrast
+3. **Accessibility**: WCAG 2.2 AA, keyboard nav, screen reader, contrast
 4. **Code Quality**: test coverage, complexity, architecture adherence
 
 When applicable, map findings and gaps to:

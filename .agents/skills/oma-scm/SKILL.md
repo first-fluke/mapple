@@ -1,6 +1,6 @@
 ---
 name: oma-scm
-description: SCM (software configuration management) and Git: branching, merges, conflicts, worktrees, baselines, audit readiness, plus Conventional Commits and safe staging.
+description: "SCM (software configuration management) and Git: branching, merges, conflicts, worktrees, baselines, audit readiness, plus Conventional Commits and safe staging."
 ---
 
 # Software configuration management: SCM (`oma-scm`)
@@ -138,6 +138,7 @@ EOF
 3. Stage only explicit files; never use broad staging unless the user explicitly approves it.
 4. Do not rewrite shared history without maintainer approval.
 5. Never stage or commit likely-secret material.
+6. **Response language follows `oma-config.yaml` `language`**: user-facing SCM output (status summaries, conflict explanations, CM audit notes, action plans) is localized. Per `i18n-guide.md`, commit messages, PR titles/body, branch names, and status keywords stay in English regardless of the setting.
 
 ### Configuration
 
@@ -325,6 +326,7 @@ Use HEREDOC by default, and switch to `-F` for long or flaky terminal sessions.
 - `resources/conventional-commits.md`
 - `resources/onboarding-risk-signals.md`
 - `resources/codeowners-playbook.md`
+- Observability handoff: `../oma-observability/SKILL.md` §Integrations — release markers (`service.version`), revert baseline diff
 
 ### Important notes
 

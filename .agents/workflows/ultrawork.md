@@ -1,5 +1,7 @@
 ---
+name: ultrawork
 description: Ultrawork - high-quality 5-phase development workflow with 11 review steps out of 17
+disable-model-invocation: true
 ---
 
 # MANDATORY RULES: VIOLATION IS FORBIDDEN
@@ -10,7 +12,7 @@ description: Ultrawork - high-quality 5-phase development workflow with 11 revie
   - Use code analysis tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `search_for_pattern`) for code exploration.
   - Use memory tools (read/write/edit) for progress tracking.
   - Memory path: configurable via `memoryConfig.basePath` (default: `.serena/memories`)
-  - Tool names: configurable via `memoryConfig.tools` in `mcp.json`
+  - Tool names: configurable via `memoryConfig.tools` in `.agents/mcp.json`
   - Do NOT use raw file reads or grep as substitutes. MCP tools are the primary interface for code and memory operations.
 - **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
@@ -29,10 +31,12 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
-4. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (11 review guides)
-5. Read `.agents/skills/_shared/core/quality-principles.md` (4 principles)
-6. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
-7. Record session start using memory write tool:
+4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
+5. Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` for required L1 decisions. The helper wraps `oma state:emit`.
+6. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (11 review guides)
+7. Read `.agents/skills/_shared/core/quality-principles.md` (4 principles)
+8. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
+9. Record session start using memory write tool:
    - Create `session-ultrawork.md` in the memory base path
    - Include: session start time, user request summary, workflow version (ultrawork)
 
@@ -70,7 +74,21 @@ Activate PM Agent to execute Steps 1-4:
 - [ ] Over-engineering review done
 - [ ] **User confirmation**
 
-**On gate pass**: Use memory edit tool to record phase completion in `session-ultrawork.md`
+**On gate pass**:
+1. Use memory edit tool to record phase completion in `session-ultrawork.md`.
+2. Emit the required L1 decision:
+   ```bash
+   oma_emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved PLAN output.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
+   ```
+3. Verify the required decision before Phase 2:
+   ```bash
+   oma state:verify --workflow ultrawork --checkpoint plan-approved
+   ```
+4. Emit and verify the implementation scope lock before spawning implementation agents:
+   ```bash
+   oma_emit "decision.made" '{"subject":"ultrawork.impl-plan-locked","decision":"Use the approved task decomposition for IMPL.","rationale":"PLAN output is locked before implementation agents are spawned."}'
+   oma state:verify --workflow ultrawork --checkpoint impl-plan-locked
+   ```
 
 **Gate failure → Return to Step 1**
 
@@ -171,6 +189,7 @@ oma agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment Review
 
 1. Use memory read tool to poll `progress-qa-agent[-{sessionId}].md`
 2. Check for `result-qa-agent[-{sessionId}].md` to confirm completion
+   - **Claude-native path**: the Agent tool returns synchronously and the `qa-reviewer` subagent writes `result-qa[-{sessionId}].md` under `.agents/results/` — check that file instead of polling.
 3. Use memory edit tool to record QA results in `session-ultrawork.md`
 
 **Continue polling until QA Agent reports completion.**
@@ -204,9 +223,11 @@ If baseline was measured at Step 5.2:
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Gate failure count has reached the configured maximum iterations (default: 5 total VERIFY + REFINE cycles). Do not start another cycle.
-> 2. Session cost cap exceeded: call `checkCap(sessionId, loadQuotaCap())` from `cli/io/session-cost.ts`. If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save all current step results before stopping, then report to the user that the loop was terminated early due to quota.
+> 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save all current step results before stopping, then report to the user that the loop was terminated early due to quota.
 >
 > If neither condition is met, return to Step 5 and continue.
+
+**Root-cause-first fix mandate:** when re-spawning implementation agents to address QA findings, the fix prompt MUST require root-cause remediation. Forbid tactical patches (try/catch swallowing the error, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent explicitly justifies why a structural fix is out of scope (upstream library bug, deprecated path, hotfix window).
 
 **Gate failure (2nd time on same issue, and termination conditions not yet met)** → Activate **Exploration Loop**:
 1. Load `exploration-loop.md` (conditional, per `context-loading.md`)
@@ -246,6 +267,7 @@ oma agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large files. 
 
 1. Use memory read tool to poll `progress-debug-agent[-{sessionId}].md`
 2. Check for `result-debug-agent[-{sessionId}].md` to confirm completion
+   - **Claude-native path**: the Agent tool returns synchronously and the `debug-investigator` subagent writes `result-debug[-{sessionId}].md` under `.agents/results/` — check that file instead of polling.
 3. Use memory edit tool to record refinement results in `session-ultrawork.md`
 
 **Continue polling until Debug Agent reports completion.**
@@ -280,13 +302,19 @@ If baseline was measured at Step 5.2:
 - [ ] Code cleaned
 - [ ] (If measured) Quality Score >= Post-VERIFY score (no regression from refinement)
 
-**On gate pass**: Use memory edit tool to record phase completion in `session-ultrawork.md`
+**On gate pass**:
+1. Use memory edit tool to record phase completion in `session-ultrawork.md`.
+2. Emit and verify the REFINE outcome decision:
+   ```bash
+   oma_emit "decision.made" '{"subject":"ultrawork.refine-outcome","decision":"Keep the REFINE changes or explicitly skip refinement.","rationale":"REFINE_GATE passed or the documented skip condition applies."}'
+   oma state:verify --workflow ultrawork --checkpoint refine-outcome
+   ```
 
 **Gate failure → Before re-spawning the Debug Agent, apply the same termination check:**
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
-> 2. Session cost cap exceeded: call `checkCap(sessionId, loadQuotaCap())` from `cli/io/session-cost.ts`. If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop. Save current step results before stopping, then report early termination due to quota.
+> 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop. Save current step results before stopping, then report early termination due to quota.
 >
 > If neither condition is met, re-spawn the Debug Agent with specific issues and repeat until GATE passes.
 
@@ -321,6 +349,7 @@ oma agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (lint/co
 
 1. Use memory read tool to poll `progress-qa-agent[-{sessionId}].md`
 2. Check for `result-qa-agent[-{sessionId}].md` to confirm completion
+   - **Claude-native path**: the Agent tool returns synchronously and the `qa-reviewer` subagent writes `result-qa[-{sessionId}].md` under `.agents/results/` — check that file instead of polling.
 3. Use memory edit tool to record final QA results in `session-ultrawork.md`
 
 **Continue polling until QA Agent reports completion.**
@@ -369,13 +398,13 @@ If Quality Score was measured during this session:
 
 ---
 
-## Step 18: Optional Doc Verify Hook
+## Step 18: Optional Doc Verify Hook (post-SHIP; outside the 17-step model)
 
 If `oma-config.yaml` has `docs.auto_verify: true`:
 
 1. Run `oma docs verify --json` from the repo root.
 2. Capture the JSON output.
-3. If `broken.length === 0`: print `✓ docs verified clean (N docs)` summary to stdout and continue with workflow completion.
+3. If `broken.length === 0`: print `docs verified clean (N docs)` summary to stdout and continue with workflow completion.
 4. If `broken.length > 0`: print a 1-3 line summary identifying which docs have drift, and a hint `Run /oma-docs verify for the full report.` Continue with workflow completion (warn-only, never block).
 5. If `oma-docs` is not available (CLI command missing): skip silently.
 
