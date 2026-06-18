@@ -15,6 +15,37 @@ class ContactRepository:
     def _not_deleted(self):
         return Contact.deleted_at.is_(None)
 
+    def _apply_filters(
+        self,
+        stmt,
+        *,
+        user_id: str,
+        q: str | None = None,
+        tag: str | None = None,
+        country: str | None = None,
+        city: str | None = None,
+    ):
+        """Apply the shared q/country/city/tag filters to a Contact query.
+
+        Used by both find_paginated and count so the two stay in lockstep.
+        """
+        if q:
+            stmt = stmt.where(Contact.name.ilike(f"%{q}%"))
+        if country:
+            stmt = stmt.where(Contact.country == country)
+        if city:
+            stmt = stmt.where(Contact.city == city)
+        if tag:
+            # Filter by tag name: join contact_tag → tag and match by name.
+            stmt = stmt.where(
+                Contact.id.in_(
+                    select(ContactTag.contact_id)
+                    .join(Tag, Tag.id == ContactTag.tag_id)
+                    .where(Tag.user_id == user_id, Tag.name == tag)
+                )
+            )
+        return stmt
+
     async def _resolve_tags(self, user_id: str, tag_ids: list[int]) -> list[Tag]:
         """Return Tag objects that belong to the given user and match the given ids.
 
@@ -40,21 +71,9 @@ class ContactRepository:
         sort: str = "created_at_desc",
     ) -> tuple[list[Contact], bool]:
         stmt = select(Contact).where(Contact.user_id == user_id, self._not_deleted())
-        if q:
-            stmt = stmt.where(Contact.name.ilike(f"%{q}%"))
-        if country:
-            stmt = stmt.where(Contact.country == country)
-        if city:
-            stmt = stmt.where(Contact.city == city)
-        if tag:
-            # Filter by tag name: join contact_tag → tag and match by name.
-            stmt = stmt.where(
-                Contact.id.in_(
-                    select(ContactTag.contact_id)
-                    .join(Tag, Tag.id == ContactTag.tag_id)
-                    .where(Tag.user_id == user_id, Tag.name == tag)
-                )
-            )
+        stmt = self._apply_filters(
+            stmt, user_id=user_id, q=q, tag=tag, country=country, city=city
+        )
         if cursor:
             stmt = stmt.where(Contact.id < cursor)
 
@@ -89,20 +108,9 @@ class ContactRepository:
             .select_from(Contact)
             .where(Contact.user_id == user_id, self._not_deleted())
         )
-        if q:
-            stmt = stmt.where(Contact.name.ilike(f"%{q}%"))
-        if country:
-            stmt = stmt.where(Contact.country == country)
-        if city:
-            stmt = stmt.where(Contact.city == city)
-        if tag:
-            stmt = stmt.where(
-                Contact.id.in_(
-                    select(ContactTag.contact_id)
-                    .join(Tag, Tag.id == ContactTag.tag_id)
-                    .where(Tag.user_id == user_id, Tag.name == tag)
-                )
-            )
+        stmt = self._apply_filters(
+            stmt, user_id=user_id, q=q, tag=tag, country=country, city=city
+        )
         result = await self.session.execute(stmt)
         return result.scalar_one()
 
