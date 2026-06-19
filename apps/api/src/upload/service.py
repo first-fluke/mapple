@@ -1,7 +1,7 @@
 import uuid
 from datetime import timedelta
 
-from src.lib.storage import storage
+from src.lib.storage import get_storage
 
 AVATAR_BUCKET = "avatars"
 MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
@@ -10,6 +10,7 @@ PRESIGNED_EXPIRY = timedelta(minutes=10)
 
 class UploadService:
     async def _ensure_bucket(self) -> None:
+        storage = get_storage()
         if not await storage.bucket_exists(AVATAR_BUCKET):
             await storage.make_bucket(AVATAR_BUCKET)
 
@@ -19,7 +20,7 @@ class UploadService:
         ext = content_type.split("/")[-1]
         object_name = f"{user_id}/{uuid.uuid4()}.{ext}"
 
-        url = await storage.presigned_put_object(
+        url = await get_storage().presigned_put_object(
             AVATAR_BUCKET,
             object_name,
             expires=PRESIGNED_EXPIRY,
