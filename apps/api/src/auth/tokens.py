@@ -9,7 +9,8 @@ import json
 import os
 import secrets
 import time
-from typing import Any
+from collections.abc import Awaitable
+from typing import Any, cast
 
 import jwt
 from redis.asyncio import Redis
@@ -199,7 +200,7 @@ async def rotate_refresh(
 async def invalidate_family(redis: Redis, family_id: str) -> None:
     """Delete all refresh tokens belonging to a family."""
     fkey = _family_key(family_id)
-    token_hashes = await redis.smembers(fkey)
+    token_hashes = await cast(Awaitable[set[str]], redis.smembers(fkey))
 
     if token_hashes:
         pipe = redis.pipeline()
@@ -217,4 +218,4 @@ async def get_refresh_record(redis: Redis, raw_token: str) -> dict[str, Any] | N
     raw = await redis.get(_refresh_key(token_hash))
     if raw is None:
         return None
-    return json.loads(raw)
+    return cast(dict[str, Any], json.loads(raw))

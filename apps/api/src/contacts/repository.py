@@ -112,7 +112,7 @@ class ContactRepository:
             stmt, user_id=user_id, q=q, tag=tag, country=country, city=city
         )
         result = await self.session.execute(stmt)
-        return result.scalar_one()
+        return int(result.scalar_one())
 
     async def find_by_id(self, contact_id: int, user_id: str) -> Contact | None:
         stmt = select(Contact).where(

@@ -8,7 +8,7 @@ private key) and verifies the id_token via Apple's JWKS endpoint.
 import hashlib
 import os
 import time
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import jwt
@@ -185,7 +185,7 @@ async def exchange_code_for_tokens(
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.post(cfg["token_endpoint"], data=data, headers=headers)
         resp.raise_for_status()
-        return resp.json()
+        return cast(dict[str, Any], resp.json())
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +200,7 @@ async def _fetch_jwks(jwks_uri: str) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(jwks_uri)
         resp.raise_for_status()
-        return resp.json()
+        return cast(dict[str, Any], resp.json())
 
 
 async def verify_google_id_token(
@@ -245,7 +245,7 @@ async def verify_google_id_token(
     )
 
     if claims.get("nonce") != nonce:
-        raise jwt.InvalidClaimError("nonce mismatch — possible replay attack")
+        raise jwt.InvalidTokenError("nonce mismatch — possible replay attack")
 
     return claims
 
@@ -318,7 +318,7 @@ async def _fetch_apple_jwks() -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(APPLE_JWKS_URI)
         resp.raise_for_status()
-        return resp.json()
+        return cast(dict[str, Any], resp.json())
 
 
 def _find_apple_jwk(jwks: dict[str, Any], kid: str | None) -> Any:
@@ -395,4 +395,4 @@ async def exchange_apple_code_for_tokens(
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.post(APPLE_TOKEN_ENDPOINT, data=data)
         resp.raise_for_status()
-        return resp.json()
+        return cast(dict[str, Any], resp.json())

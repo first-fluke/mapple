@@ -1,6 +1,7 @@
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable
 from contextlib import asynccontextmanager
+from typing import cast
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -99,7 +100,7 @@ async def health() -> JSONResponse:
     except Exception:
         db_ok = False
     try:
-        await redis.ping()
+        await cast(Awaitable[bool], redis.ping())
         redis_ok = True
     except Exception:
         redis_ok = False
