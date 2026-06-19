@@ -29,7 +29,7 @@ class GlobeApp extends ConsumerWidget {
     return FTheme(
       data: foruiTheme,
       child: MaterialApp.router(
-        title: 'Globe CRM',
+        title: 'Mapple',
         debugShowCheckedModeBanner: false,
         themeMode: themeMode,
         localizationsDelegates: const [

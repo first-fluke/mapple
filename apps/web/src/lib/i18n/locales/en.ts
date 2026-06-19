@@ -32,7 +32,7 @@ export const en: Messages = {
     },
     appearance: {
       title: 'Appearance',
-      description: 'Customize how Globe CRM looks on your device.',
+      description: 'Customize how Mapple looks on your device.',
       themeLabel: 'Theme',
       themeHint: 'Choose between light, dark, or system default.',
       themeSystem: 'System',
@@ -223,7 +223,7 @@ export const en: Messages = {
     emptyDescription: 'Add a location (city or country) to a contact to see them on the globe.',
     emptyAriaLabel: 'No contact locations',
     onboarding: {
-      title: 'Welcome to Globe CRM',
+      title: 'Welcome to Mapple',
       description: 'Your globe is empty. Add your first contact to start mapping your relationships across the world.',
       getStarted: 'Add your first contact',
     },
@@ -262,7 +262,7 @@ export const en: Messages = {
   },
 
   auth: {
-    loginTitle: 'Globe CRM',
+    loginTitle: 'Mapple',
     loginDescription: 'Sign in to your account',
     continueWithGoogle: 'Continue with Google',
     continueWithGitHub: 'Continue with GitHub',

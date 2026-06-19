@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// Application title
   ///
   /// In ko, this message translates to:
-  /// **'Globe CRM'**
+  /// **'Mapple'**
   String get appTitle;
 
   /// Bottom navigation tab: globe

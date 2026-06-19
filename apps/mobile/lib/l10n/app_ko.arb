@@ -1,7 +1,7 @@
 {
   "@@locale": "ko",
 
-  "appTitle": "Globe CRM",
+  "appTitle": "Mapple",
   "@appTitle": { "description": "Application title" },
 
   "navGlobe": "Globe",

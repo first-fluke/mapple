@@ -6,12 +6,12 @@ export const termsEn: LegalDoc = {
   lastUpdated: '2026-05-03',
   lastUpdatedLabel: 'Last updated:',
   intro:
-    'This terms draft is a temporary placeholder for the Globe CRM v1 launch. It will be updated following legal review before the official service launch.',
+    'This terms draft is a temporary placeholder for the Mapple v1 launch. It will be updated following legal review before the official service launch.',
   sections: [
     {
       heading: '1. Service Overview',
       paragraphs: [
-        'Globe CRM (hereinafter "the Service") is software that helps users visualize and manage their personal network.',
+        'Mapple (hereinafter "the Service") is software that helps users visualize and manage their personal network.',
       ],
     },
     {

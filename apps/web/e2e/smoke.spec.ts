@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * E2E Smoke Tests for Globe CRM Web (Hybrid Stack)
+ * E2E Smoke Tests for Mapple Web (Hybrid Stack)
  *
  * Verifies the deployed web application works correctly against
  * the full Supabase+Fly.io+Vercel stack.
@@ -73,7 +73,7 @@ test.describe('Smoke: Navigation Structure', () => {
       return;
     }
 
-    await expect(page.getByRole('heading', { name: 'Globe CRM' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mapple' })).toBeVisible();
 
     for (const name of ['Globe', 'Graph', 'Contacts', 'Settings']) {
       await expect(page.getByRole('link', { name })).toBeVisible();

@@ -1,6 +1,6 @@
-# Globe CRM API
+# Mapple API
 
-FastAPI backend for Globe CRM.
+FastAPI backend for Mapple.
 
 ## Architecture
 

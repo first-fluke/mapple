@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Globe CRM',
+  title: 'Mapple',
   description: 'Customer relationship management with geospatial capabilities',
 };
 

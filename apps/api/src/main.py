@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(
-    title="Globe CRM API",
+    title="Mapple API",
     version="0.1.0",
     lifespan=lifespan,
     docs_url=None if IS_PROD else "/docs",

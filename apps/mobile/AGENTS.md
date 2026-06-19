@@ -1,6 +1,6 @@
 # Mobile App (Flutter)
 
-Globe CRM mobile application built with Flutter.
+Mapple mobile application built with Flutter.
 
 ## Tech Stack
 

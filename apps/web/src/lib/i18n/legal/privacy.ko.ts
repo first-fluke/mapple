@@ -5,7 +5,7 @@ export const privacyKo: LegalDoc = {
   lastUpdated: '2026-05-03',
   lastUpdatedLabel: '최종 수정일:',
   intro:
-    '본 방침 초안은 Globe CRM v1 출시를 위한 임시 본문이며, 정식 서비스 개시 전 법무 검토를 거쳐 갱신될 예정입니다.',
+    '본 방침 초안은 Mapple v1 출시를 위한 임시 본문이며, 정식 서비스 개시 전 법무 검토를 거쳐 갱신될 예정입니다.',
   sections: [
     {
       heading: '1. 수집하는 개인정보',

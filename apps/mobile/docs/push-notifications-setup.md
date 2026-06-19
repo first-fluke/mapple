@@ -1,6 +1,6 @@
 # Push Notifications Setup
 
-This document walks through activating Firebase Cloud Messaging (FCM) in Globe CRM Mobile. The app ships with a no-op implementation that compiles and passes all tests without any Firebase credentials. Follow the steps below to switch it to the live implementation.
+This document walks through activating Firebase Cloud Messaging (FCM) in Mapple Mobile. The app ships with a no-op implementation that compiles and passes all tests without any Firebase credentials. Follow the steps below to switch it to the live implementation.
 
 ## Overview
 
@@ -172,7 +172,7 @@ On first launch after permission is granted the app will:
 { "token": "<fcm_registration_token>", "platform": "ios" | "android" }
 ```
 
-The backend endpoint is part of the Globe CRM API (`apps/api`). The Dio instance used is the shared `dioProvider` from `lib/core/api/dio_client.dart`, which applies the `AuthInterceptor` (Bearer JWT). If the user is not authenticated the 401 response is silently swallowed; the token is re-registered on the next `onTokenRefresh` event or the next permission grant.
+The backend endpoint is part of the Mapple API (`apps/api`). The Dio instance used is the shared `dioProvider` from `lib/core/api/dio_client.dart`, which applies the `AuthInterceptor` (Bearer JWT). If the user is not authenticated the 401 response is silently swallowed; the token is re-registered on the next `onTokenRefresh` event or the next permission grant.
 
 ---
 

@@ -9,7 +9,7 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get appTitle => 'Globe CRM';
+  String get appTitle => 'Mapple';
 
   @override
   String get navGlobe => 'Globe';

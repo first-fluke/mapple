@@ -5,7 +5,7 @@ import { getServerLocale } from '@/lib/i18n/server';
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const content = getLegalContent(locale, 'privacy');
-  return { title: `Globe CRM ${content.title}` };
+  return { title: `Mapple ${content.title}` };
 }
 
 export default async function PrivacyPage() {

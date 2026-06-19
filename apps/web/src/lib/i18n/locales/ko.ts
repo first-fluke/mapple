@@ -315,7 +315,7 @@ export const ko: Messages = {
     },
     appearance: {
       title: '테마',
-      description: 'Globe CRM이 기기에서 어떻게 보일지 설정합니다.',
+      description: 'Mapple이 기기에서 어떻게 보일지 설정합니다.',
       themeLabel: '테마',
       themeHint: '라이트, 다크, 또는 시스템 기본값 중 선택하세요.',
       themeSystem: '시스템',
@@ -503,7 +503,7 @@ export const ko: Messages = {
     emptyDescription: '연락처에 위치(도시 또는 국가)를 추가하면 지구본에서 확인할 수 있습니다.',
     emptyAriaLabel: '연락처 위치 없음',
     onboarding: {
-      title: 'Globe CRM에 오신 것을 환영합니다',
+      title: 'Mapple에 오신 것을 환영합니다',
       description: '지구본이 비어 있습니다. 첫 번째 연락처를 추가하여 세계 각지의 인맥을 지도에 표시해 보세요.',
       getStarted: '첫 번째 연락처 추가',
     },
@@ -540,7 +540,7 @@ export const ko: Messages = {
     connectionColType: '관계 유형',
   },
   auth: {
-    loginTitle: 'Globe CRM',
+    loginTitle: 'Mapple',
     loginDescription: '계정에 로그인하세요',
     continueWithGoogle: 'Google로 계속하기',
     continueWithGitHub: 'GitHub으로 계속하기',

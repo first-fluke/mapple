@@ -5,12 +5,12 @@ export const termsKo: LegalDoc = {
   lastUpdated: '2026-05-03',
   lastUpdatedLabel: '최종 수정일:',
   intro:
-    '본 약관 초안은 Globe CRM v1 출시를 위한 임시 본문이며, 정식 서비스 개시 전 법무 검토를 거쳐 갱신될 예정입니다.',
+    '본 약관 초안은 Mapple v1 출시를 위한 임시 본문이며, 정식 서비스 개시 전 법무 검토를 거쳐 갱신될 예정입니다.',
   sections: [
     {
       heading: '1. 서비스 개요',
       paragraphs: [
-        'Globe CRM(이하 "서비스")는 사용자가 본인의 인적 네트워크를 시각화하고 관리할 수 있도록 돕는 소프트웨어입니다.',
+        'Mapple(이하 "서비스")는 사용자가 본인의 인적 네트워크를 시각화하고 관리할 수 있도록 돕는 소프트웨어입니다.',
       ],
     },
     {

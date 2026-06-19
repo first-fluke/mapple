@@ -8,7 +8,7 @@ export default function AppearancePage() {
     <Card>
       <CardHeader>
         <CardTitle>Appearance</CardTitle>
-        <CardDescription>Customize how Globe CRM looks on your device.</CardDescription>
+        <CardDescription>Customize how Mapple looks on your device.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between rounded-md border p-4">

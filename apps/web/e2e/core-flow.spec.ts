@@ -16,7 +16,7 @@ test.describe('Core Flow: Login → Contacts → Globe → Graph', () => {
       return;
     }
 
-    await expect(page.getByRole('heading', { name: 'Globe CRM' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mapple' })).toBeVisible();
 
     for (const name of ['Globe', 'Graph', 'Contacts', 'Settings']) {
       await expect(page.getByRole('link', { name })).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Core Flow: Login → Contacts → Globe → Graph', () => {
       return;
     }
 
-    await expect(page.getByRole('heading', { name: 'Globe CRM' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mapple' })).toBeVisible();
 
     const globeLink = page.getByRole('link', { name: 'Globe' });
     await expect(globeLink).toHaveAttribute('aria-current', 'page');
@@ -48,7 +48,7 @@ test.describe('Core Flow: Login → Contacts → Globe → Graph', () => {
     // Navigate back to Globe
     await page.getByRole('link', { name: 'Globe' }).click();
     await page.waitForURL('/');
-    await expect(page.getByRole('heading', { name: 'Globe CRM' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mapple' })).toBeVisible();
   });
 
   test('auth layout is separate from main layout', async ({ page }) => {

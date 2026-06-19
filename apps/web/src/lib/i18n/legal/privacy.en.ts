@@ -6,7 +6,7 @@ export const privacyEn: LegalDoc = {
   lastUpdated: '2026-05-03',
   lastUpdatedLabel: 'Last updated:',
   intro:
-    'This policy draft is a temporary placeholder for the Globe CRM v1 launch. It will be updated following legal review before the official service launch.',
+    'This policy draft is a temporary placeholder for the Mapple v1 launch. It will be updated following legal review before the official service launch.',
   sections: [
     {
       heading: '1. Personal Information We Collect',

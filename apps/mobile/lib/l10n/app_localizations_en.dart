@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Globe CRM';
+  String get appTitle => 'Mapple';
 
   @override
   String get navGlobe => 'Globe';

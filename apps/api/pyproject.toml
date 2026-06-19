@@ -1,7 +1,7 @@
 [project]
 name = "globe-crm-api"
 version = "0.1.0"
-description = "Globe CRM Backend API"
+description = "Mapple Backend API"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.115.0",

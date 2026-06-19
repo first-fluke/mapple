@@ -1,5 +1,5 @@
 """
-E2E Smoke Tests for Globe CRM API (Hybrid Stack)
+E2E Smoke Tests for Mapple API (Hybrid Stack)
 
 These tests verify the deployed API endpoints work correctly against
 a real running instance (Fly.io, local, or any target).
