@@ -59,9 +59,11 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
-# Skip e2e tests by default — they require a live server (E2E_API_URL).
-# Run them explicitly with: uv run pytest -m e2e
-addopts = "-m 'not e2e'"
+# Default run is DB-free: e2e (live server) and integration (real Postgres) are
+# deselected. Run them explicitly: uv run pytest -m e2e  /  uv run pytest -m integration
+# (integration needs TEST_DATABASE_URL pointing at a real Postgres).
+addopts = "-m 'not e2e and not integration'"
 markers = [
     "e2e: end-to-end smoke tests against a running API instance (requires E2E_API_URL)",
+    "integration: tests that hit a real database (auto-applied to tests using db fixtures)",
 ]

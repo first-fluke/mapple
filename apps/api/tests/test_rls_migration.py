@@ -15,6 +15,10 @@ from sqlalchemy import text
 
 from tests.conftest import TestSessionFactory
 
+# Talks to a real Postgres directly via the test engine (not through a fixture),
+# so mark the whole module integration to keep the default run DB-free.
+pytestmark = pytest.mark.integration
+
 
 @pytest.mark.asyncio
 async def test_rls_policy_sql_is_valid():

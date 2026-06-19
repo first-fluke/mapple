@@ -195,9 +195,32 @@ async def create_test_experience(
 # ---------------------------------------------------------------------------
 
 
+_DB_FIXTURES = {"client", "rate_limit_client", "db_session"}
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(config, items):
+    """Auto-mark any test that requests a DB-backed fixture as ``integration``.
+
+    Runs tryfirst so the marker is in place before pytest evaluates the ``-m``
+    deselection expression. Keeps the default run DB-free without per-file edits.
+    """
+    for item in items:
+        if _DB_FIXTURES & set(getattr(item, "fixturenames", ())):
+            item.add_marker("integration")
+
+
 @pytest.fixture(scope="session", autouse=True)
-async def setup_database():
-    """Create all tables before tests, drop after."""
+async def setup_database(request):
+    """Create all tables before tests, drop after — integration runs only.
+
+    No-op when no integration test is selected, so a DB-free default run never
+    opens a connection.
+    """
+    if not any(item.get_closest_marker("integration") for item in request.session.items):
+        yield
+        return
+
     # Import all models so SQLAlchemy metadata is complete.
     import src.auth.models  # noqa: F401
     import src.contact_relationships.models  # noqa: F401
@@ -218,8 +241,10 @@ async def setup_database():
 
 
 @pytest.fixture(autouse=True)
-async def cleanup():
-    """Truncate all tables before each test for isolation."""
+async def cleanup(request):
+    """Truncate all tables before each test for isolation — integration only."""
+    if request.node.get_closest_marker("integration") is None:
+        return
     async with test_engine.begin() as conn:
         for table in reversed(Base.metadata.sorted_tables):
             await conn.execute(text(f'TRUNCATE TABLE "{table.name}" CASCADE'))
