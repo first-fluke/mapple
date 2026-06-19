@@ -1,10 +1,14 @@
 import datetime
+from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
 from sqlalchemy import DateTime, Float, ForeignKey, PrimaryKeyConstraint, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.lib.database import Base
+
+if TYPE_CHECKING:
+    from src.tags.models import Tag
 
 
 class ContactTag(Base):
@@ -49,7 +53,7 @@ class Contact(Base):
     # ORM then inserts only (contact_id, tag_id) and lets the DB apply the
     # server defaults for color and updated_at.
     # overlaps="contact_id,tag_id" silences the SA2.0 relationship overlap warning.
-    tags: Mapped[list["Tag"]] = relationship(  # type: ignore[name-defined]
+    tags: Mapped[list["Tag"]] = relationship(
         "Tag",
         secondary=lambda: ContactTag.__table__,
         lazy="selectin",

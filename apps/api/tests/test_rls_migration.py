@@ -12,7 +12,6 @@ rolling it back, so the test suite remains idempotent.
 
 import pytest
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.conftest import TestSessionFactory
 

@@ -7,12 +7,9 @@ Strategy:
 - Assert graceful failure when Nominatim returns non-200.
 """
 
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
-from tests.conftest import make_auth_headers, create_test_user
+from tests.conftest import create_test_user, make_auth_headers
 
 
 def _make_nominatim_response(country: str = "South Korea", city: str = "Seoul") -> MagicMock:

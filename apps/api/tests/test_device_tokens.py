@@ -12,7 +12,6 @@ Security scenarios tested:
   - Idempotency: re-posting the same token does not duplicate the row
 """
 
-import pytest
 
 from tests.conftest import create_test_user, make_auth_headers
 

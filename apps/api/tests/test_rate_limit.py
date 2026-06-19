@@ -22,7 +22,6 @@ import pytest
 
 from tests.conftest import make_auth_headers
 
-
 # --- Auth endpoint rate limiting ---
 
 
@@ -173,10 +172,8 @@ async def test_data_rate_limit_applied_to_contacts(client, db_session):
     is wired by inspecting the router's dependency list directly — not by
     hitting the limit (which would require 120+ requests).
     """
-    from fastapi import Depends
 
     from src.contacts.router import router as contacts_router
-    from src.lib.rate_limit import check_data_rate_limit
 
     # Check that check_data_rate_limit appears in the router's dependencies.
     dep_calls = [str(dep.dependency) for dep in contacts_router.dependencies]

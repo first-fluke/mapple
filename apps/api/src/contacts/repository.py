@@ -1,7 +1,7 @@
 import datetime
 
-from sqlalchemy import select
 from sqlalchemy import func as sa_func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.contacts.models import Contact, ContactTag

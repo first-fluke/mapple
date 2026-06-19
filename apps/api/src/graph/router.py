@@ -16,7 +16,10 @@ router = APIRouter(prefix="/graph", tags=["graph"], dependencies=[Depends(check_
 @router.get("/data")
 async def get_graph_data(
     search: str | None = Query(default=None, description="Filter nodes by contact name (case-insensitive)"),
-    type: LinkType | None = Query(default=None, description="Filter links by LinkType (colleague|classmate|friend|other)"),
+    type: LinkType | None = Query(
+        default=None,
+        description="Filter links by LinkType (colleague|classmate|friend|other)",
+    ),
     user_id: str = Depends(get_current_user_id),
     session: AsyncSession = Depends(get_session),
     redis: Redis = Depends(get_redis),

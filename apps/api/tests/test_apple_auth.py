@@ -7,8 +7,6 @@ The real token-verification path is skipped (requires live Apple JWKS + valid to
 import os
 from unittest.mock import patch
 
-import pytest
-
 
 async def test_apple_exchange_returns_501_when_unconfigured(client):
     """POST /auth/exchange with provider=apple must return 501 when Apple env vars are absent."""
@@ -24,7 +22,6 @@ async def test_apple_exchange_returns_501_when_unconfigured(client):
         clear=False,
     ):
         # Force the module-level _apple_credentials_present() to see empty values.
-        import importlib
 
         import src.auth.oauth as oauth_mod
 
@@ -80,7 +77,6 @@ async def test_unsupported_provider_returns_400(client):
 
 async def test_apple_credentials_present_helper_false_when_env_empty():
     """Unit test: _apple_credentials_present() returns False when env vars are unset."""
-    import src.auth.oauth as oauth_mod
 
     with patch.dict(
         os.environ,

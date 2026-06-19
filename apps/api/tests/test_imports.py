@@ -10,8 +10,6 @@ Covers:
 
 import io
 
-import pytest
-
 from tests.conftest import create_test_user, make_auth_headers
 
 

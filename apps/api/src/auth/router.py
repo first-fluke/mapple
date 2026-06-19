@@ -17,13 +17,12 @@ import secrets
 from typing import Annotated
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.oauth import (
-    PROVIDER_CONFIG,
     SUPPORTED_PROVIDERS,
     _apple_credentials_present,
     build_authorization_url,

@@ -28,7 +28,6 @@ from src.organizations.router import router as organizations_router
 from src.tags.router import router as tags_router
 from src.upload.router import router as upload_router
 
-
 ENV = os.getenv("ENV", "dev")
 IS_PROD = ENV == "prod"
 

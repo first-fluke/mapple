@@ -24,7 +24,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from src.auth.models import User
 from src.contacts.models import Contact
 from src.experiences.models import Experience
-from src.tags.models import Tag
 from src.lib.auth import (
     JWT_ALGORITHM,
     JWT_AUDIENCE,
@@ -37,6 +36,7 @@ from src.lib.rate_limit import check_data_rate_limit, check_rate_limit
 from src.lib.redis import get_redis
 from src.main import app
 from src.organizations.models import Organization
+from src.tags.models import Tag
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",

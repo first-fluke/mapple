@@ -11,15 +11,12 @@ The drift that caused the 500 errors was:
 Every test here fails if the old model is present, and passes with the fixed model.
 """
 
-import pytest
 
 from tests.conftest import (
-    create_test_contact,
     create_test_tag,
     create_test_user,
     make_auth_headers,
 )
-
 
 # ---------------------------------------------------------------------------
 # Repository-level FK regression

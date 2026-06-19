@@ -28,5 +28,5 @@ class DeviceTokenService:
         )
         if not deleted:
             raise NotFoundException(
-                message=f"Device token not found for the current user"
+                message="Device token not found for the current user"
             )
