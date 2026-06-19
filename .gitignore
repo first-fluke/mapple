@@ -33,6 +33,11 @@ docs/plans/
 # Fly.io
 .fly/
 
+# Supabase CLI (local link cache — never commit; config.toml is committable if added)
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+
 # Terraform
 .terraform/
 *.tfstate
