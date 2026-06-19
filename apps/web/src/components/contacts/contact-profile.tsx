@@ -1,7 +1,9 @@
 'use client';
 
-import { Camera, Github, Instagram, Linkedin, Loader2, Mail, Phone, Twitter } from 'lucide-react';
+import { SiGithub, SiInstagram, SiX } from '@icons-pack/react-simple-icons';
+import { Camera, Loader2, Mail, Phone } from 'lucide-react';
 import { useMemo, useRef } from 'react';
+import { LinkedinIcon } from '@/components/icons/linkedin-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAvatarUpload } from '@/hooks/use-contact';
 import { useToast } from '@/hooks/use-toast';
@@ -19,10 +21,10 @@ function getInitials(name: string) {
 }
 
 const snsIcons = {
-  linkedin: Linkedin,
-  twitter: Twitter,
-  github: Github,
-  instagram: Instagram,
+  linkedin: LinkedinIcon,
+  twitter: SiX,
+  github: SiGithub,
+  instagram: SiInstagram,
 } as const;
 
 interface ContactProfileProps {
