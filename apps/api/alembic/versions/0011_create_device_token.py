@@ -5,7 +5,7 @@ A unique constraint on (user_id, token) enables idempotent upsert via
 INSERT ... ON CONFLICT DO UPDATE.
 
 RLS follows the two-tier pattern established in migration 0010:
-  1. Service-role bypass: USING (true) for the ``globe`` owner role so that
+  1. Service-role bypass: USING (true) for the ``mapple`` owner role so that
      the application can read/write all rows while FORCE RLS remains active.
   2. User-scoped policy: scoped to current_setting('app.current_user_id')
      for any future restricted role (PostgREST, etc.).
@@ -25,7 +25,7 @@ down_revision: Union[str, None] = "0010"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-_SERVICE_ROLE = "globe"
+_SERVICE_ROLE = "mapple"
 _TABLE = "device_token"
 
 

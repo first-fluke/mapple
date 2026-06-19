@@ -10,7 +10,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://globe:globe@localhost:11432/globe_crm",
+    "postgresql+asyncpg://mapple:mapple@localhost:11432/mapple",
 )
 
 # Supabase Supavisor (transaction mode, port 6543) reuses prepared statement

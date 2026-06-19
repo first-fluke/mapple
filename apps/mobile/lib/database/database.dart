@@ -106,7 +106,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'globe_crm.sqlite'));
+    final file = File(p.join(dbFolder.path, 'mapple.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
 }

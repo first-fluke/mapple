@@ -40,7 +40,7 @@ from src.tags.models import Tag
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://globe:globe@localhost:5432/globe_crm_test",
+    "postgresql+asyncpg://mapple:mapple@localhost:5432/mapple_test",
 )
 
 # Exported so security tests can reference the key value directly.

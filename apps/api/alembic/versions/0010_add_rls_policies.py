@@ -8,13 +8,13 @@ This migration adds the missing policies.
 
 ## Connection / role model (src/lib/database.py)
 
-The FastAPI application connects as the ``globe`` Postgres role (the same
+The FastAPI application connects as the ``mapple`` Postgres role (the same
 role that owns all tables, specified in DATABASE_URL).  Postgres normally
 bypasses RLS for the table owner, but migration 0007 set
 ``FORCE ROW LEVEL SECURITY``, so even the owner is subject to RLS.
 
 There is currently **no** ``SET LOCAL app.current_user_id`` call anywhere in
-the application's session lifecycle; all queries run as the single ``globe``
+the application's session lifecycle; all queries run as the single ``mapple``
 role with no per-request impersonation.
 
 ## Policy design
@@ -25,14 +25,14 @@ layer is not possible without application changes.  The policies defined here
 therefore implement **two tiers**:
 
 1. **Service-role bypass**: A permissive ``USING (true)`` policy for the
-   ``globe`` role covers every table.  This restores the application's
+   ``mapple`` role covers every table.  This restores the application's
    ability to read and write all rows (the behaviour before 0007) while
    keeping RLS enabled as infrastructure.
 
 2. **User-scoped policies** (for any future restricted role or PostgREST
    direct access): Policies on user-owned tables scoped to
    ``current_setting('app.current_user_id', true)`` are added but
-   intentionally do **not** apply to the ``globe`` role.  If the application
+   intentionally do **not** apply to the ``mapple`` role.  If the application
    ever gains a per-request ``SET LOCAL app.current_user_id = :uid`` call,
    switching to a lower-privileged Postgres role for data queries will make
    these policies the active gate automatically.
@@ -76,7 +76,7 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 # The Postgres role used by the application (DATABASE_URL user).
-_SERVICE_ROLE = "globe"
+_SERVICE_ROLE = "mapple"
 
 
 def _service_bypass(table: str, policy_name: str) -> None:
