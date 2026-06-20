@@ -3,7 +3,7 @@
 import { getDefaultStore } from 'jotai';
 import { useEffect } from 'react';
 import { clearTokens, setTokens } from '@/lib/auth/api-client';
-import { tokenAtom } from '@/lib/auth/atoms';
+import { authBootstrappedAtom, tokenAtom } from '@/lib/auth/atoms';
 import { subscribeAuthEvents } from '@/lib/auth/broadcast';
 import { decodeAccessExp } from '@/lib/auth/jwt';
 import { loadRefresh, REFRESH_STORAGE_KEY } from '@/lib/auth/storage';
@@ -55,8 +55,13 @@ export function AuthBootstrap() {
     if (fragment) {
       setTokens(fragment, { broadcast: true });
       clearLocationHash();
+      store.set(authBootstrappedAtom, true);
     } else if (!store.get(tokenAtom)) {
-      void tryRestoreFromRefresh();
+      void tryRestoreFromRefresh().finally(() => {
+        store.set(authBootstrappedAtom, true);
+      });
+    } else {
+      store.set(authBootstrappedAtom, true);
     }
 
     const unsubscribe = subscribeAuthEvents((event) => {
